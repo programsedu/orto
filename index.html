@@ -301,6 +301,24 @@ const BUILTIN=[
   ['Konzolne stepenice',3,fromLayers([['#..','#..'],['##.','##.'],['###','###']])],
   ['Toranj s krstom',3,fromHeights(['020','151','020'])],
 ].map((b,i)=>[b,i]).sort((p,q)=>p[0][1]-q[0][1]||p[1]-q[1]).map(p=>p[0]).map((b,i)=>({id:'b'+i,name:b[0],level:b[1],vox:b[2],builtin:true}));
+  ['Stepenice ka napred',1,fromHeights(['33','22','11'])],
+  ['Ležeće L',1,fromHeights(['100','100','111'])],
+  ['Stub na postolju',1,fromHeights(['111','131','111'])],
+  ['Dve kule',1,fromHeights(['313','313'])],
+  ['Visoke stepenice',1,fromHeights(['1234','1234'])],
+  ['Slovo T',2,fromLayers([['.#.','.#.'],['.#.','.#.'],['###','###']])],
+  ['Kocka s udubljenjem',2,fromHeights(['333','323','333'])],
+  ['Slovo H',2,fromHeights(['202','222','202'])],
+  ['Dvostruki most',2,fromLayers([['#.#.#'],['#####']])],
+  ['Dijagonala',2,fromHeights(['100','010','001'])],
+  ['Mala piramida',2,fromHeights(['1111','1221','1221','1111'])],
+  ['Slovo Z',2,fromHeights(['220','020','022'])],
+  ['Garaža',3,fromLayers([['###','#.#','#.#'],['###','#.#','#.#'],['###','###','###']])],
+  ['Polica',3,fromLayers([['###','###'],['###','#.#'],['###','###'],['###','#.#'],['###','###']])],
+  ['Kutija',3,fromHeights(['2222','2112','2112','2222'])],
+  ['Kula s prolazom',3,fromLayers([['###','###','###'],['#.#','#.#','#.#'],['#.#','#.#','#.#'],['###','###','###']])],
+  ['Sto na jednoj nozi',3,fromLayers([['...','.#.','...'],['...','.#.','...'],['###','###','###']])],
+  ['Stepenice u uglu',3,fromHeights(['4321','3321','2221','1111'])],
 
 /* ---------- encode / storage ---------- */
 function encode(t){
