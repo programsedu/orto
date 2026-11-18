@@ -1230,25 +1230,96 @@ function drawTask(){
 const AXO_KEYS=['k','d','i'],AXO_NAMES={k:'Kosa projekcija',d:'Dimetrija',i:'Izometrija'};
 const axRev={k:false,d:false,i:false};
 const axStep={k:0,d:0,i:0};
+const PROF_KEY={n:'f',t:'t',b:'s'};
+// faze izgradnje predmeta (kao u udžbeniku: oblik jedne strane, izvlačenje, odsecanje, useci, rupe)
+function axoStages(geo){
+  if(geo._stages)return geo._stages;
+  const s=geo.sol,{W,D,H}=s,full=(U,V)=>Array.from({length:V},()=>'#'.repeat(U));
+  const base={W,D,H,f:full(W,H),t:full(W,D),s:full(D,H),holes:[],cuts:[]};
+  const mk=o=>buildSolidGeo(Object.assign({},base,o));
+  const profs=[['n',s.f],['t',s.t],['b',s.s]].filter(([k,r])=>r.some(x=>/[^#]/.test(x)));
+  const st=[];let cur={};
+  if(profs.length){
+    const [k0,r0]=profs[0];cur[PROF_KEY[k0]]=r0;const g=mk(cur);
+    st.push({t:'face',p:k0,geo:g},{t:'ext',p:k0,geo:g});
+    for(let i=1;i<profs.length;i++){const [k,r]=profs[i];cur=Object.assign({},cur,{[PROF_KEY[k]]:r});st.push({t:'prof',p:k,geo:mk(cur)});}
+  }
+  if(s.cuts.length>4)st.push({t:'cuts',geo:mk(Object.assign({},cur,{cuts:s.cuts}))});
+  else{const cs=[];for(const c of s.cuts){cs.push(c);st.push({t:'cut',c,geo:mk(Object.assign({},cur,{cuts:cs.slice()}))});}}
+  const hs=[];
+  if(s.holes.length>4)st.push({t:'holes',hs:s.holes,geo:mk(Object.assign({},cur,{cuts:s.cuts,holes:s.holes}))});
+  else for(const h of s.holes){hs.push(h);st.push({t:'hole',h,geo:mk(Object.assign({},cur,{cuts:s.cuts,holes:hs.slice()}))});}
+  return geo._stages=st;
+}
+const axSteps=geo=>3+axoStages(geo).length;
+function stepTitle(k,n,geo){
+  const st=axoStages(geo),N=axSteps(geo),PN={n:'nacrta',t:'tlocrta',b:'bokocrta'};
+  if(n===1)return 'Pomoćne linije';if(n===2)return 'Opisani kvadar';if(n===N)return 'Podebljavanje';
+  const x=st[n-3];
+  return {face:'Oblik '+PN[x.p],ext:'Izvlačenje oblika',prof:'Odsecanje prema obliku '+PN[x.p],cut:'Usek',cuts:'Useci',hole:'Rupa',holes:'Rupe'}[x.t];
+}
 function stepText(k,n,geo){
   const W=geo.W,D=geo.D,H=geo.H,ang={k:'45°',d:'7° (levo) i 42° (desno)',i:'30° levo i desno'}[k];
-  const hasHole=geo.sol&&geo.sol.holes&&geo.sol.holes.length;
-  const sk=k==='i'?'u pravoj veličini':'skraćenu na polovinu ('+fmtMM(D)+' mm → '+fmtMM(D/2)+' mm)';
-  return [
-    'Nacrtaj vodoravnu liniju. Iz tačke koja će biti prednji donji ugao predmeta povuci pomoćne linije pod uglom od '+ang+'.'+(k==='k'?' Prednja strana se crta vodoravno, u pravoj veličini.':''),
-    'Tankim linijama nacrtaj opisani kvadar – kutiju u koju predmet staje: širina '+fmtMM(W)+' mm, visina '+fmtMM(H)+' mm, a dubinu nanesi '+sk+'. Ivice koje se ne vide crtaj isprekidano ili ih izostavi.',
-    'Unutar kvadra tankim linijama ucrtaj delove predmeta (stepenike, useke, kosine'+(hasHole?', rupe':'')+'). Mere prenosi uvek paralelno sa ivicama kvadra'+(k==='i'?'':'; sve mere u pravcu dubine skraćuj na polovinu')+'.'+(hasHole?(k==='k'?' Krug na prednjoj strani ostaje krug, a na ostalim stranama postaje elipsa.':' Krugovi se crtaju kao elipse.'):''),
-    'Podebljaj vidljive ivice predmeta. Pomoćne linije i delove kvadra koji ne pripadaju predmetu obriši (ili ostavi vrlo tanko).'
-  ][n-1];
+  const st=axoStages(geo),N=axSteps(geo),sk2=k!=='i';
+  const dAng={k:'45°',d:'42°',i:'30° (udesno)'}[k],wAng={k:'vodoravno',d:'duž linije pod 7°',i:'duž linije pod 30° (ulevo)'}[k];
+  const sk=sk2?'skraćenu na polovinu ('+fmtMM(D)+' mm → '+fmtMM(D/2)+' mm)':'u pravoj veličini';
+  const leg=' Crvene linije su nove u ovom koraku, a sive linije treba obrisati.';
+  if(n===1)return 'Nacrtaj vodoravnu liniju. Iz tačke koja će biti prednji donji ugao predmeta povuci pomoćne linije pod uglom od '+ang+'.'+(k==='k'?' Prednja strana se crta vodoravno, u pravoj veličini.':'');
+  if(n===2)return 'Tankim linijama nacrtaj opisani kvadar – kutiju u koju predmet staje: širinu '+fmtMM(W)+' mm nanesi '+wAng+', visinu '+fmtMM(H)+' mm uspravno, a dubinu pod '+dAng+' '+sk+'. Ivice koje se ne vide crtaj isprekidano ili ih izostavi.';
+  if(n===N)return 'Podebljaj vidljive ivice predmeta. Pomoćne linije i delove kvadra koji ne pripadaju predmetu obriši (ili ostavi vrlo tanko).';
+  const x=st[n-3],half=v=>sk2?fmtMM(v/2):fmtMM(v);
+  if(x.t==='face'){
+    if(x.p==='n')return 'Na prednjoj strani kvadra tankim linijama nacrtaj oblik predmeta gledan spreda (nacrt). '+(k==='k'?'U kosoj projekciji prednja strana se crta u pravoj veličini – isto kao nacrt.':'Mere širine nanosi '+wAng+', a visine uspravno, u pravoj veličini.')+' Kose ivice dobijaš spajanjem prenesenih tačaka.';
+    if(x.p==='t')return 'Na gornjoj strani kvadra nacrtaj oblik predmeta gledan odozgo (tlocrt). Mere širine nanosi '+wAng+', a mere dubine duž linije pod '+dAng+(sk2?', skraćene na polovinu':'')+'.';
+    return 'Na desnoj bočnoj strani kvadra nacrtaj oblik predmeta gledan sa strane (bokocrt). Visine nanosi uspravno, a dubine duž linije pod '+dAng+(sk2?', skraćene na polovinu':'')+'.';
+  }
+  if(x.t==='ext'){
+    if(x.p==='n')return 'Iz svakog temena nacrtanog oblika povuci linije unazad, paralelne sa pomoćnom linijom pod '+dAng+', dužine '+half(D)+' mm (dubina'+(sk2?' skraćena na polovinu':'')+'). Spoji krajeve tih linija – dobija se zadnja strana predmeta.'+leg;
+    if(x.p==='t')return 'Iz svakog temena oblika na gornjoj strani povuci uspravne linije naniže, do dna kvadra ('+fmtMM(H)+' mm), i spoji njihove krajeve.'+leg;
+    return 'Iz svakog temena oblika na bočnoj strani povuci linije ulevo, paralelne sa ivicom širine ('+fmtMM(W)+' mm), i spoji njihove krajeve.'+leg;
+  }
+  if(x.t==='prof'){const PN={n:'nacrtu (pogled spreda)',t:'tlocrtu (pogled odozgo)',b:'bokocrtu (pogled sa strane)'}[x.p];
+    return 'Sada predmet oblikuj prema '+PN+': prenesi tačke sa ivica kvadra i ucrtaj linije po kojima se deo predmeta odseca. Mere u pravcu dubine'+(sk2?' skraćuj na polovinu':' nanosi u pravoj veličini')+'.'+leg;}
+  if(x.t==='cut'||x.t==='cuts'){
+    let name='useke';
+    if(x.t==='cut'){const c=x.c,ch=c.ch;name=ch==='o'?'zaobljeni izrez':'#'===ch?'pravougaoni usek':'1234'.includes(ch)?'kosinu (kosi zasek)':'zaobljenje';
+      const w=Math.abs(c.u1-c.u0),h=Math.abs(c.w1-c.w0),where={n:'gledano spreda',t:'gledano odozgo',b:'gledano sa strane'}[c.v];
+      return 'Ucrtaj '+name+' ('+where+', '+fmtMM(w)+' × '+fmtMM(h)+' mm). Tačke prenosi paralelno sa ivicama kvadra'+(sk2?', mere po dubini skraćene na polovinu':'')+', pa ih spoji.'+leg;}
+    return 'Ucrtaj sve useke i zaseke: tačke prenosi paralelno sa ivicama kvadra'+(sk2?', mere po dubini skraćene na polovinu':'')+'.'+leg;
+  }
+  const hs=x.t==='hole'?[x.h]:x.hs,h=hs[0],d=h.d;
+  let shape;
+  if(k==='k'&&h.v==='n')shape='krug prečnika '+fmtMM(d)+' mm (na prednjoj strani krug ostaje krug)';
+  else{const a2=(k==='i'||h.v==='n')?fmtMM(d):fmtMM(d/2),b2=(k!=='i'&&h.v==='t')?fmtMM(d/2):fmtMM(d);
+    const pa=h.v==='n'?[fmtMM(d),fmtMM(d)]:h.v==='t'?[fmtMM(d),k==='i'?fmtMM(d):fmtMM(d/2)]:[k==='i'?fmtMM(d):fmtMM(d/2),fmtMM(d)];
+    shape='oko centra paralelogram (romb) stranica '+pa[0]+' i '+pa[1]+' mm, pa u njega upiši elipsu koja dodiruje sredine stranica';}
+  return 'Ucrtaj '+(hs.length>1?'rupe':'rupu Ø'+fmtMM(d)+' mm')+': najpre nacrtaj ose (crta-tačka) kroz centar, zatim '+shape+'. Ako rupa prolazi kroz predmet, ucrtaj i vidljivi deo ivice rupe na drugoj strani.'+leg;
 }
 function renderStepUI(k){
-  const el=$('axSt'+k),n=axStep[k];
+  const el=$('axSt'+k),n=axStep[k],N=axSteps(curGeo);
   if(!n){el.innerHTML='<button class="btn small" data-a="start">▶ Postupak crtanja</button>';}
-  else el.innerHTML='<div class="stepbox"><b>Korak '+n+' od 4.</b> '+esc(stepText(k,n,curGeo))+'</div>'+
+  else el.innerHTML='<div class="stepbox"><b>Korak '+n+' od '+N+': '+esc(stepTitle(k,n,curGeo))+'.</b> '+esc(stepText(k,n,curGeo))+'</div>'+
     '<div class="row" style="margin-top:6px"><button class="btn small" data-a="prev"'+(n<=1?' disabled':'')+'>◀ Prethodni</button>'+
-    '<button class="btn small" data-a="next"'+(n>=4?' disabled':'')+'>Sledeći ▶</button><button class="btn small" data-a="end">Gotov crtež</button></div>';
+    '<button class="btn small" data-a="next"'+(n>=N?' disabled':'')+'>Sledeći ▶</button><button class="btn small" data-a="end">Gotov crtež</button></div>';
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{const a=b.dataset.a;
-    axStep[k]=a==='start'?1:a==='prev'?Math.max(1,n-1):a==='next'?Math.min(4,n+1):0;drawAxo();});
+    axStep[k]=a==='start'?1:a==='prev'?Math.max(1,n-1):a==='next'?Math.min(N,n+1):0;drawAxo();});
+}
+// delovi segmenata iz A koji (ne) leže na segmentima iz B
+function diffSegs(A,B){
+  const eps=0.035,inB=(x,y)=>{for(const b of B){const dx=b[2]-b[0],dy=b[3]-b[1],L2=dx*dx+dy*dy;let t=L2?((x-b[0])*dx+(y-b[1])*dy)/L2:0;t=Math.max(0,Math.min(1,t));
+    if(Math.hypot(b[0]+t*dx-x,b[1]+t*dy-y)<eps)return true;}return false;};
+  const same=[],neu=[];
+  for(const a of A){const L=Math.hypot(a[2]-a[0],a[3]-a[1]),K=Math.max(2,Math.ceil(L*6));let cur=null,start=0;
+    const push=(f,t0,t1)=>{(f?same:neu).push([a[0]+(a[2]-a[0])*t0,a[1]+(a[3]-a[1])*t0,a[0]+(a[2]-a[0])*t1,a[1]+(a[3]-a[1])*t1]);};
+    for(let i=0;i<K;i++){const t=(i+0.5)/K,f=inB(a[0]+(a[2]-a[0])*t,a[1]+(a[3]-a[1])*t);
+      if(cur===null){cur=f;start=0;}else if(f!==cur){push(cur,start,i/K);cur=f;start=i/K;}}
+    push(cur,start,1);}
+  return {same,neu};
+}
+function faceSegs(geo,p,pr){
+  const W=geo.W,D=geo.D,H=geo.H,ci={n:1,t:2,b:0}[p],val={n:0,t:H,b:W}[p],out=[];
+  for(const [A,B] of geo.feat)if(Math.abs(A[ci]-val)<1e-4&&Math.abs(B[ci]-val)<1e-4){const a=pr(A),b=pr(B);out.push([a[0],a[1],b[0],b[1]]);}
+  return out;
 }
 function axoParams(key){
   const r=Math.PI/180;
@@ -1267,7 +1338,7 @@ function axoView(geo,key){
   return geo._axo[key]=Object.assign({},P,{vis:L.vis,hid:L.hid,pr});
 }
 function drawAxoTo(cv,wrap,geo,key,shown,step){
-  step=step||0;
+  step=step||0;const NS=step?axSteps(geo):0;
   const g=cv.getContext('2d'),av=axoView(geo,key),{ex,ey,ez}=av,W=geo.W,D=geo.D,H=geo.H;
   // pomoćne linije iz prednjeg donjeg ugla (kao u udžbeniku)
   const C=av.pr([W,0,0]),unit=v=>{const l=Math.hypot(v[0],v[1]);return [v[0]/l,v[1]/l];};
@@ -1330,7 +1401,7 @@ function drawAxoTo(cv,wrap,geo,key,shown,step){
       const E=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]],hidE=new Set(['2,3','3,0','3,7']);
       g.lineWidth=1.1;g.lineCap='butt';
       for(const [a,b] of E){const hdn=hidE.has(a+','+b);
-        g.strokeStyle=step>=4?'#d6cdb8':(hdn?'#a8a29e':'#57534e');g.setLineDash(hdn?[5,4]:[]);
+        g.strokeStyle=step>=NS?'#d6cdb8':(hdn?'#a8a29e':'#57534e');g.setLineDash(hdn?[5,4]:[]);
         g.beginPath();g.moveTo(Bx[a][0],Bx[a][1]);g.lineTo(Bx[b][0],Bx[b][1]);g.stroke();}
       g.setLineDash([]);
       if(step===2){
@@ -1340,11 +1411,32 @@ function drawAxoTo(cv,wrap,geo,key,shown,step){
         lab(fmtMM(W),Bx[0],Bx[1],[0,c*0.45]);lab(fmtMM(D)+sh,Bx[1],Bx[2],[c*0.9,c*0.2]);lab(fmtMM(H),Bx[0],Bx[4],[-c*0.5,0]);
       }
     }
-    if(step===3){
-      g.strokeStyle='#1f2933';g.lineWidth=1.2;g.lineCap='round';
-      g.beginPath();for(const s of av.vis){g.moveTo(X(s[0]),Y(s[1]));g.lineTo(X(s[2]),Y(s[3]));}g.stroke();
+    if(step>=3&&step<NS){
+      const st=axoStages(geo),i=step-3,x=st[i];
+      const segsOf=j=>{const y=st[j];return y.t==='face'?faceSegs(y.geo,y.p,av.pr):axoView(y.geo,key).vis;};
+      const cur=segsOf(i),prev=i>0?segsOf(i-1):[];
+      const dc=diffSegs(cur,prev),gone=diffSegs(prev,cur).neu;
+      const draw=(L,col,w,dash)=>{if(!L.length)return;g.strokeStyle=col;g.lineWidth=w;g.setLineDash(dash||[]);g.beginPath();for(const s of L){g.moveTo(X(s[0]),Y(s[1]));g.lineTo(X(s[2]),Y(s[3]));}g.stroke();g.setLineDash([]);};
+      g.lineCap='round';
+      draw(gone,'#a8a29e',1.3,[4,3]);
+      draw(dc.same,'#1f2933',1.3);
+      draw(dc.neu,'#dc2626',Math.max(1.8,c*0.06));
+      // ose i paralelogram za rupe
+      const hs=x.t==='hole'?[x.h]:x.t==='holes'?x.hs:[];
+      for(const h of hs){
+        const mp=viewMap(h.v,W,D,H),[ha,hb]=holeRange(h,mp.L),r=h.d/2,E=0.35;
+        const inv=P=>h.v==='n'?[P[0],P[2],P[1]]:h.v==='t'?[P[0],P[1],P[2]]:[D-P[1],P[2],P[0]];
+        let dep=null;for(const e of x.geo.feat)for(const P of e){const q=inv(P);if(Math.abs(Math.hypot(q[0]-h.u,q[1]-h.w)-r)<0.02&&q[2]>=ha-1e-6&&q[2]<=hb+1e-6)dep=dep===null?q[2]:(h.v==='n'?Math.min(dep,q[2]):Math.max(dep,q[2]));}
+        if(dep===null)dep=h.v==='n'?ha:hb;
+        const Q=(u,w)=>{const q=av.pr(mp.M(u,w,dep));return [X(q[0]),Y(q[1])];};
+        g.strokeStyle='#2563eb';g.lineWidth=1;g.setLineDash([8,3,2,3]);g.beginPath();
+        let p1=Q(h.u-r-E,h.w),p2=Q(h.u+r+E,h.w);g.moveTo(p1[0],p1[1]);g.lineTo(p2[0],p2[1]);
+        p1=Q(h.u,h.w-r-E);p2=Q(h.u,h.w+r+E);g.moveTo(p1[0],p1[1]);g.lineTo(p2[0],p2[1]);g.stroke();g.setLineDash([]);
+        if(!(key==='k'&&h.v==='n')){g.strokeStyle='#60a5fa';g.beginPath();
+          const cs=[[-r,-r],[r,-r],[r,r],[-r,r]].map(([a,b])=>Q(h.u+a,h.w+b));g.moveTo(cs[0][0],cs[0][1]);for(const q of cs.slice(1))g.lineTo(q[0],q[1]);g.closePath();g.stroke();}
+      }
     }
-    if(step<4)return;
+    if(step<NS)return;
   }
   g.strokeStyle='#1f2933';
   if($('axHidden').checked&&av.hid.length){
