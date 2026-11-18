@@ -17,7 +17,7 @@
 html,body{margin:0}
 body{font-family:Nunito,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:15px}
 button{font-family:inherit;font-size:14px;cursor:pointer}
-.app{display:grid;grid-template-columns:250px minmax(0,1.2fr) minmax(0,1fr);gap:16px;padding:16px;min-height:100vh;align-items:start}
+.app{display:grid;grid-template-columns:250px minmax(0,1.2fr) minmax(0,1fr);gap:16px;padding:16px;min-height:100vh;align-items:start;align-content:start}
 .card{background:var(--card);border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 16px rgba(60,40,0,.05);padding:16px}
 h1{font-size:18px;margin:0 0 2px;font-weight:900;letter-spacing:-.2px}
 h2{font-size:16px;margin:0;font-weight:800}
@@ -99,6 +99,22 @@ input[type=text]{width:100%}
 details{margin-top:12px;font-size:13.5px;line-height:1.5}
 details summary{cursor:pointer;font-weight:800}
 details ul{padding-left:18px;margin:6px 0}
+.tabs{display:flex;gap:4px;background:#efeae0;padding:4px;border-radius:12px;margin:0 0 12px}
+.tabs button{flex:1;border:0;background:transparent;border-radius:9px;padding:7px 6px;font-weight:800;color:var(--muted)}
+.tabs button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.palette{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.palette button{width:38px;height:38px;border:1.5px solid var(--line);border-radius:9px;background:#fff;padding:5px;display:grid;place-items:center}
+.palette button.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.palette svg,.pcell svg{width:100%;height:100%;display:block}
+.pgrid{display:grid;gap:3px;touch-action:none;user-select:none}
+.pcell{aspect-ratio:1;border:1.5px solid #d8cfbc;border-radius:5px;background:#fbf8f2;padding:1px;cursor:pointer}
+.vtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.orient{font-size:12.5px;color:var(--muted);margin:0 0 8px;font-weight:700}
+.dims{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.dims label{display:flex;flex-direction:column;gap:3px;font-size:12px;font-weight:800;color:var(--muted)}
+.hole{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.hole input{width:58px;padding:5px 6px;font-size:13px}
+.hole select{padding:5px 6px;font-size:13px}
 .app>*{min-width:0}
 #view3d{width:100%}
 @media (max-width:1100px){
@@ -122,6 +138,7 @@ details ul{padding-left:18px;margin:6px 0}
   <aside class="card side">
     <h1>Ortogonalna projekcija</h1>
     <p class="sub">Izaberi predmet za zadatak</p>
+    <div class="tabs"><button id="tabV" class="on">Kockice</button><button id="tabS">Izometrija</button></div>
     <div class="list" id="list"></div>
     <div class="sidebtns">
       <button class="btn primary" id="newBtn">＋ Novi predmet</button>
@@ -153,7 +170,7 @@ details ul{padding-left:18px;margin:6px 0}
         <button class="btn small" id="rotR" title="Okreni desno">⟳ 90°</button>
         <button class="btn small" id="isoBtn">Početni položaj</button>
         <span class="spacer"></span>
-        <label class="chk"><input type="checkbox" id="optCubes" checked> Kockice</label>
+        <label class="chk" id="optCubesL"><input type="checkbox" id="optCubes" checked> Kockice</label>
         <label class="chk"><input type="checkbox" id="optArrows" checked> Strelice</label>
         <button class="btn small" id="fsBtn">⛶ Ceo ekran</button>
       </div>
@@ -188,7 +205,7 @@ details ul{padding-left:18px;margin:6px 0}
       <label class="chk"><input type="checkbox" id="optGrid" checked> Kvadratići</label>
       <label class="chk"><input type="checkbox" id="optAxes" checked> Koordinatne ose</label>
       <label class="chk"><input type="checkbox" id="optSpone"> Spone</label>
-      <label class="chk"><input type="checkbox" id="optFill"> Senči površine</label>
+      <label class="chk" id="optFillL"><input type="checkbox" id="optFill"> Senči površine</label>
     </div>
     <div id="solWrap"><canvas id="sol"></canvas></div>
     <p class="note">Raspored je po evropskom sistemu: tlocrt je ispod nacrta, a bokocrt (pogled sleva) desno od nacrta. Jedan kvadratić je jedna kockica. <b>Razmak</b> sakriva/prikazuje rešenje, <b>← →</b> menjaju zadatak.</p>
@@ -198,7 +215,8 @@ details ul{padding-left:18px;margin:6px 0}
         <li>Izaberi predmet levo i prikaži ga deci (dugme „Ceo ekran“ je zgodno za projektor).</li>
         <li>Deca na kvadratićima crtaju nacrt, tlocrt i bokocrt, gledajući u pravcu strelica N, T i B.</li>
         <li>Rešenje otkrivaj pogled po pogled ili sve odjednom.</li>
-        <li>„Novi predmet“ otvara graditelj: slažeš kockice sloj po sloj. Sačuvani predmeti ostaju u ovom pregledaču; dugme „Kod zadatka“ daje kod da ga preneseš na drugi računar.</li>
+        <li>Tab „Izometrija“ ima tela sa kosinama, zaobljenjima i rupama. Isprekidano tanje (crta-tačka) su ose rupa.</li>
+        <li>„Novi predmet“ otvara graditelj: u tabu Kockice slažeš kockice sloj po sloj, a u tabu Izometrija crtaš tri profila (nacrt, tlocrt, bokocrt) i dodaješ rupe. Sačuvani predmeti ostaju u ovom pregledaču; dugme „Kod zadatka“ daje kod da ga preneseš na drugi računar.</li>
       </ul>
     </details>
   </section>
@@ -226,6 +244,48 @@ details ul{padding-left:18px;margin:6px 0}
     </div>
     <div class="msg" id="edMsg"></div>
   </section>
+
+  <!-- Solid editor panel -->
+  <section class="card hidden" id="sedPanel">
+    <div class="solhead"><h2 id="sedTitle">Novi predmet</h2></div>
+    <div class="field"><span class="lbl">Naziv</span><input type="text" id="sedName" maxlength="40"></div>
+    <div class="dims">
+      <label>Težina<select id="sedLevel"><option value="1">lako</option><option value="2">srednje</option><option value="3">teže</option></select></label>
+      <label>Širina<select id="sedW"></select></label>
+      <label>Dubina<select id="sedD"></select></label>
+      <label>Visina<select id="sedH"></select></label>
+    </div>
+    <div class="field"><span class="lbl">Profil koji crtaš</span>
+      <div class="vtabs">
+        <button class="revbtn" id="sedVn" style="color:var(--N)"><span class="dot" style="background:var(--N)">N</span><span class="t">Nacrt</span></button>
+        <button class="revbtn" id="sedVt" style="color:var(--T)"><span class="dot" style="background:var(--T)">T</span><span class="t">Tlocrt</span></button>
+        <button class="revbtn" id="sedVb" style="color:var(--B)"><span class="dot" style="background:var(--B)">B</span><span class="t">Bokocrt</span></button>
+      </div>
+    </div>
+    <p class="orient" id="sedOrient"></p>
+    <div class="palette" id="sedPal"></div>
+    <div class="pgrid" id="sedGrid"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn small" id="sedFill">Popuni profil</button>
+      <button class="btn small" id="sedEmpty">Isprazni profil</button>
+    </div>
+    <p class="note">Telo je ono što ostaje kad se sva tri profila „provuku“ kroz ceo predmet i preseku. Prazno polje u jednom profilu izbacuje materijal kroz ceo predmet u tom pravcu; kosine i zaobljenja biraš iz palete.</p>
+    <div class="field" style="margin-top:6px"><span class="lbl">Rupe (valjkasti otvori)</span>
+      <div id="sedHoles"></div>
+      <div><button class="btn small" id="sedAddHole">＋ Dodaj rupu</button></div>
+      <p class="note" style="margin-top:6px">Rupa se zadaje u pogledu u kom se vidi kao krug: centar se meri u kvadratićima od levog donjeg ugla tog pogleda. „Od–do“ je dužina rupe duž ose (prazno = kroz ceo predmet).</p>
+    </div>
+    <div class="field" style="margin-top:6px"><span class="lbl">Izrezi (useci, žlebovi, kosine do određene dubine)</span>
+      <div id="sedCuts"></div>
+      <div><button class="btn small" id="sedAddCut">＋ Dodaj izrez</button></div>
+      <p class="note" style="margin-top:6px">Izrez se crta u izabranom pogledu kao pravougaonik (levo-desno i gore-dole od–do, u kvadratićima od levog donjeg ugla), u njega se upiše izabrani oblik i on se izbacuje iz tela od zadate do zadate dubine.</p>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <button class="btn primary" id="sedSave">Sačuvaj predmet</button>
+      <button class="btn" id="sedCancel">Otkaži</button>
+    </div>
+    <div class="msg" id="sedMsg"></div>
+  </section>
 </div>
 
 <!-- Modal -->
@@ -247,7 +307,7 @@ details ul{padding-left:18px;margin:6px 0}
 const $ = id => document.getElementById(id);
 const COLORS = {n:'#d64545', t:'#2f6fdb', b:'#2e9e5b'};
 const LV = {1:'lako',2:'srednje',3:'teže'};
-const STORE_KEY = 'orto-moji-zadaci-v1';
+const STORE = {v:'orto-moji-zadaci-v1', s:'orto-moji-tela-v1'};
 
 /* ---------- voxel model ---------- */
 function mkVox(W,D,H){return {W,D,H,a:new Uint8Array(W*D*H)};}
@@ -267,7 +327,7 @@ function fromLayers(L){
   L.forEach((rows,z)=>rows.forEach((r,ri)=>[...r].forEach((ch,x)=>{if(ch==='#')setv(v,x,D-1-ri,z,1);})));
   return v;
 }
-const BUILTIN=[
+const BUILTIN_V=[
   ['Kocka 2×2×2',1,fromHeights(['22','22'])],
   ['Stepenice',1,fromHeights(['321','321'])],
   ['L-blok',1,fromHeights(['311','311'])],
@@ -319,10 +379,391 @@ const BUILTIN=[
   ['Sto na jednoj nozi',3,fromLayers([['...','.#.','...'],['...','.#.','...'],['###','###','###']])],
   ['Stepenice u uglu',3,fromHeights(['4321','3321','2221','1111'])],
   ['Vežbanje',3,decode('OP1|Ve%C5%BEbanje|3|4|4|3|88ef00030003').vox],
-].map((b,i)=>[b,i]).sort((p,q)=>p[0][1]-q[0][1]||p[1]-q[1]).map(p=>p[0]).map((b,i)=>({id:'b'+i,name:b[0],level:b[1],vox:b[2],builtin:true}));
+].map((b,i)=>[b,i]).sort((p,q)=>p[0][1]-q[0][1]||p[1]-q[1]).map(p=>p[0]).map((b,i)=>({id:'b'+i,kind:'v',name:b[0],level:b[1],vox:b[2],builtin:true}));
+
+/* ---------- tela: geometrija (CSG preseci profila + rupe) ---------- */
+const G={
+  sub:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],
+  dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+  len:a=>Math.hypot(a[0],a[1],a[2]),
+  lerp:(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t],
+};
+G.norm=a=>{const l=G.len(a)||1;return [a[0]/l,a[1]/l,a[2]/l];};
+const CEPS=1e-5;
+function CPlane(n,w){this.n=n;this.w=w;}
+CPlane.prototype.clone=function(){return new CPlane(this.n.slice(),this.w);};
+CPlane.prototype.flip=function(){this.n=[-this.n[0],-this.n[1],-this.n[2]];this.w=-this.w;};
+CPlane.prototype.split=function(poly,cf,cb,f,b){
+  let pt=0;const ts=[];
+  for(const v of poly.v){const t=G.dot(this.n,v)-this.w;const ty=t<-CEPS?2:(t>CEPS?1:0);pt|=ty;ts.push(ty);}
+  if(pt===0){(G.dot(this.n,poly.p.n)>0?cf:cb).push(poly);}
+  else if(pt===1)f.push(poly);
+  else if(pt===2)b.push(poly);
+  else{
+    const fv=[],bv=[],n=poly.v.length;
+    for(let i=0;i<n;i++){
+      const j=(i+1)%n,ti=ts[i],tj=ts[j],vi=poly.v[i],vj=poly.v[j];
+      if(ti!==2)fv.push(vi);
+      if(ti!==1)bv.push(vi);
+      if((ti|tj)===3){const t=(this.w-G.dot(this.n,vi))/G.dot(this.n,G.sub(vj,vi));const v=G.lerp(vi,vj,t);fv.push(v);bv.push(v);}
+    }
+    if(fv.length>=3)f.push(new CPoly(fv,poly.p));
+    if(bv.length>=3)b.push(new CPoly(bv,poly.p));
+  }
+};
+function CPoly(v,p){this.v=v;this.p=p;}
+CPoly.prototype.flipped=function(){const p=this.p.clone();p.flip();return new CPoly(this.v.slice().reverse(),p);};
+function CNode(polys){this.plane=null;this.front=null;this.back=null;this.polys=[];if(polys)this.build(polys);}
+CNode.prototype.invert=function(){
+  this.polys=this.polys.map(p=>p.flipped());
+  if(this.plane)this.plane.flip();
+  if(this.front)this.front.invert();
+  if(this.back)this.back.invert();
+  const t=this.front;this.front=this.back;this.back=t;
+};
+CNode.prototype.clipPolygons=function(polys){
+  if(!this.plane)return polys.slice();
+  let f=[],b=[];
+  for(const p of polys)this.plane.split(p,f,b,f,b);
+  if(this.front)f=this.front.clipPolygons(f);
+  if(this.back)b=this.back.clipPolygons(b);else b=[];
+  return f.concat(b);
+};
+CNode.prototype.clipTo=function(bsp){
+  this.polys=bsp.clipPolygons(this.polys);
+  if(this.front)this.front.clipTo(bsp);
+  if(this.back)this.back.clipTo(bsp);
+};
+CNode.prototype.allPolygons=function(){
+  let p=this.polys.slice();
+  if(this.front)p=p.concat(this.front.allPolygons());
+  if(this.back)p=p.concat(this.back.allPolygons());
+  return p;
+};
+CNode.prototype.build=function(polys){
+  if(!polys.length)return;
+  if(!this.plane)this.plane=polys[0].p.clone();
+  const f=[],b=[];
+  for(const p of polys)this.plane.split(p,this.polys,this.polys,f,b);
+  if(f.length){if(!this.front)this.front=new CNode();this.front.build(f);}
+  if(b.length){if(!this.back)this.back=new CNode();this.back.build(b);}
+};
+function csgOp(a,b,op){
+  const A=new CNode(a),B=new CNode(b);
+  if(op==='i'){A.invert();B.clipTo(A);B.invert();A.clipTo(B);B.clipTo(A);A.build(B.allPolygons());A.invert();}
+  else{A.invert();A.clipTo(B);B.clipTo(A);B.invert();B.clipTo(A);B.invert();A.build(B.allPolygons());A.invert();}
+  return A.allPolygons();
+}
+function mkPoly(verts,n){
+  n=G.norm(n);
+  let nx=0,ny=0,nz=0;
+  for(let i=0;i<verts.length;i++){const a=verts[i],b=verts[(i+1)%verts.length];
+    nx+=(a[1]-b[1])*(a[2]+b[2]);ny+=(a[2]-b[2])*(a[0]+b[0]);nz+=(a[0]-b[0])*(a[1]+b[1]);}
+  if(nx*n[0]+ny*n[1]+nz*n[2]<0)verts=verts.slice().reverse();
+  return new CPoly(verts,new CPlane(n,G.dot(n,verts[0])));
+}
+// oblici polja profila (lokalno p desno, q gore), CCW; s = pune stranice (b,r,t,l)
+const ARC_N=12;
+const CELL=(()=>{
+  const q=Math.PI/2,o={};
+  o['#']={pts:[[0,0],[1,0],[1,1],[0,1]],s:'brtl'};
+  o['1']={pts:[[0,0],[1,0],[0,1]],s:'bl'};
+  o['2']={pts:[[0,0],[1,0],[1,1]],s:'br'};
+  o['3']={pts:[[1,0],[1,1],[0,1]],s:'rt'};
+  o['4']={pts:[[0,0],[1,1],[0,1]],s:'lt'};
+  let p=[[0,0],[1,0],[1,1]];for(let k=1;k<ARC_N;k++){const a=q+k*q/ARC_N;p.push([1+Math.cos(a),Math.sin(a)]);}o['5']={pts:p,s:'br'};
+  p=[[0,0],[1,0]];for(let k=1;k<ARC_N;k++){const a=k*q/ARC_N;p.push([Math.cos(a),Math.sin(a)]);}p.push([0,1]);o['6']={pts:p,s:'bl'};
+  p=[[0,0]];for(let k=1;k<ARC_N;k++){const a=-q+k*q/ARC_N;p.push([Math.cos(a),1+Math.sin(a)]);}p.push([1,1],[0,1]);o['7']={pts:p,s:'tl'};
+  p=[[1,0],[1,1],[0,1]];for(let k=1;k<ARC_N;k++){const a=2*q+k*q/ARC_N;p.push([1+Math.cos(a),1+Math.sin(a)]);}o['8']={pts:p,s:'rt'};
+  return o;
+})();
+function viewMap(kind,W,D,H){
+  if(kind==='n')return {M:(u,v,r)=>[u,r,v],dU:[1,0,0],dV:[0,0,1],ax:[0,1,0],L:D,U:W,V:H};
+  if(kind==='t')return {M:(u,v,r)=>[u,v,r],dU:[1,0,0],dV:[0,1,0],ax:[0,0,1],L:H,U:W,V:D};
+  return {M:(u,v,r)=>[r,D-u,v],dU:[0,-1,0],dV:[0,0,1],ax:[1,0,0],L:W,U:D,V:H};
+}
+const map2=(m,a,b)=>[a*m.dU[0]+b*m.dV[0],a*m.dU[1]+b*m.dV[1],a*m.dU[2]+b*m.dV[2]];
+function extrudeProfile(kind,rows,W,D,H){
+  const m=viewMap(kind,W,D,H),U=m.U,V=m.V,L=m.L,neg=m.ax.map(x=>-x);
+  const cell=(c,r)=>{if(c<0||r<0||c>=U||r>=V)return '.';const row=rows[V-1-r]||'';return row[c]||'.';};
+  const polys=[];
+  for(let r=0;r<V;r++)for(let c=0;c<U;c++){
+    const sh=CELL[cell(c,r)];if(!sh)continue;
+    const P=sh.pts.map(([p,q])=>[c+p,r+q]);
+    polys.push(mkPoly(P.map(([u,v])=>m.M(u,v,0)),neg));
+    polys.push(mkPoly(P.map(([u,v])=>m.M(u,v,L)),m.ax));
+    for(let i=0;i<P.length;i++){
+      const j=(i+1)%P.length,la=sh.pts[i],lb=sh.pts[j];
+      let side=null;
+      if(la[1]===0&&lb[1]===0)side='b';else if(la[0]===1&&lb[0]===1)side='r';else if(la[1]===1&&lb[1]===1)side='t';else if(la[0]===0&&lb[0]===0)side='l';
+      if(side){const nb={b:[c,r-1,'t'],r:[c+1,r,'l'],t:[c,r+1,'b'],l:[c-1,r,'r']}[side];const ns=CELL[cell(nb[0],nb[1])];if(ns&&ns.s.includes(nb[2]))continue;}
+      const A=P[i],B=P[j];
+      polys.push(mkPoly([m.M(A[0],A[1],0),m.M(B[0],B[1],0),m.M(B[0],B[1],L),m.M(A[0],A[1],L)],map2(m,B[1]-A[1],-(B[0]-A[0]))));
+    }
+  }
+  return polys;
+}
+const CYL_N=48;
+function holeRange(h,L){let a=(h.a===''||h.a==null)?0:+h.a,b=(h.b===''||h.b==null)?L:+h.b;if(b<a){const t=a;a=b;b=t;}return [a,b];}
+function cylinderPolys(h,W,D,H){
+  const m=viewMap(h.v,W,D,H),r=h.d/2;
+  let [a,b]=holeRange(h,m.L);if(a<=1e-6)a=-0.5;if(b>=m.L-1e-6)b=m.L+0.5;
+  const ring=[];for(let i=0;i<CYL_N;i++){const t=i*2*Math.PI/CYL_N;ring.push([h.u+r*Math.cos(t),h.w+r*Math.sin(t)]);}
+  const polys=[];
+  for(let i=0;i<CYL_N;i++){const A=ring[i],B=ring[(i+1)%CYL_N],tm=(i+0.5)*2*Math.PI/CYL_N;
+    polys.push(mkPoly([m.M(A[0],A[1],a),m.M(B[0],B[1],a),m.M(B[0],B[1],b),m.M(A[0],A[1],b)],map2(m,Math.cos(tm),Math.sin(tm))));}
+  polys.push(mkPoly(ring.map(([u,v])=>m.M(u,v,a)),m.ax.map(x=>-x)));
+  polys.push(mkPoly(ring.map(([u,v])=>m.M(u,v,b)),m.ax));
+  return polys;
+}
+function prismPolys(m,pts,a,b,out){
+  let ar=0;for(let i=0;i<pts.length;i++){const p=pts[i],q=pts[(i+1)%pts.length];ar+=p[0]*q[1]-q[0]*p[1];}
+  if(ar<0)pts=pts.slice().reverse();
+  const neg=m.ax.map(x=>-x);
+  for(let i=1;i<pts.length-1;i++){
+    out.push(mkPoly([pts[0],pts[i],pts[i+1]].map(([u,v])=>m.M(u,v,a)),neg));
+    out.push(mkPoly([pts[0],pts[i],pts[i+1]].map(([u,v])=>m.M(u,v,b)),m.ax));
+  }
+  for(let i=0;i<pts.length;i++){const A=pts[i],B=pts[(i+1)%pts.length];
+    out.push(mkPoly([m.M(A[0],A[1],a),m.M(B[0],B[1],a),m.M(B[0],B[1],b),m.M(A[0],A[1],b)],map2(m,B[1]-A[1],-(B[0]-A[0]))));}
+}
+// izrez: oblik polja razvučen na pravougaonik u pogledu, dubine od a do b
+function cutPolys(c,W,D,H){
+  const m=viewMap(c.v,W,D,H);let [a,b]=holeRange(c,m.L);if(a<=1e-6)a=-0.5;if(b>=m.L-1e-6)b=m.L+0.5;
+  const u0=Math.min(c.u0,c.u1),u1=Math.max(c.u0,c.u1),w0=Math.min(c.w0,c.w1),w1=Math.max(c.w0,c.w1);
+  const S=([p,q])=>[u0+p*(u1-u0),w0+q*(w1-w0)];
+  const out=[];
+  if(c.ch==='o'){
+    const N=12;
+    [[1,1,0],[0,1,90],[0,0,180],[1,0,270]].forEach(([cx,cy,t0])=>{
+      const pts=[[cx,cy]];
+      for(let k=0;k<=N;k++){const t=(t0+k*90/N)*Math.PI/180;pts.push([0.5+0.5*Math.cos(t),0.5+0.5*Math.sin(t)]);}
+      prismPolys(m,pts.map(S),a,b,out);
+    });
+  } else prismPolys(m,CELL[c.ch].pts.map(S),a,b,out);
+  return out;
+}
+function normRows(rows,U,V){
+  const out=[];for(let i=0;i<V;i++){let r=(rows&&rows[i])||'';r=r.slice(0,U);while(r.length<U)r+=rows?'.':'#';out.push(r.replace(/[^#.1-8]/g,'.'));}
+  return out;
+}
+function normSolid(s){
+  const W=Math.max(1,Math.min(8,s.W|0)),D=Math.max(1,Math.min(8,s.D|0)),H=Math.max(1,Math.min(8,s.H|0));
+  return {W,D,H,f:normRows(s.f,W,H),t:normRows(s.t,W,D),s:normRows(s.s,D,H),
+    holes:(s.holes||[]).filter(h=>h&&'ntb'.includes(h.v)&&+h.d>0).map(h=>({v:h.v,u:+h.u||0,w:+h.w||0,d:+h.d,a:h.a===''||h.a==null?'':+h.a,b:h.b===''||h.b==null?'':+h.b})),
+    cuts:(s.cuts||[]).filter(c=>c&&'ntb'.includes(c.v)&&(CELL[c.ch]||c.ch==='o')).map(c=>({v:c.v,ch:c.ch,u0:+c.u0||0,u1:+c.u1||0,w0:+c.w0||0,w1:+c.w1||0,a:c.a===''||c.a==null?'':+c.a,b:c.b===''||c.b==null?'':+c.b})).filter(c=>Math.abs(c.u1-c.u0)>1e-6&&Math.abs(c.w1-c.w0)>1e-6)};
+}
+function buildSolidGeo(s0){
+  const s=normSolid(s0),{W,D,H}=s;
+  const profs=[['n',s.f],['t',s.t],['b',s.s]].filter(([k,r])=>r.some(x=>/[^#]/.test(x)));
+  let polys=profs.length?extrudeProfile(profs[0][0],profs[0][1],W,D,H):extrudeProfile('n',s.f,W,D,H);
+  for(let i=1;i<profs.length;i++)polys=csgOp(polys,extrudeProfile(profs[i][0],profs[i][1],W,D,H),'i');
+  for(const c of s.cuts)polys=csgOp(polys,cutPolys(c,W,D,H),'s');
+  for(const h of s.holes)polys=csgOp(polys,cylinderPolys(h,W,D,H),'s');
+  // spajanje temena
+  const vid=new Map(),verts=[],faces=[];
+  const key=p=>Math.round(p[0]*1e4)+','+Math.round(p[1]*1e4)+','+Math.round(p[2]*1e4);
+  for(const p of polys){
+    const ids=[];
+    for(const v of p.v){const k=key(v);let id=vid.get(k);if(id===undefined){id=verts.length;verts.push(v);vid.set(k,id);}if(ids[ids.length-1]!==id)ids.push(id);}
+    if(ids.length>1&&ids[0]===ids[ids.length-1])ids.pop();
+    if(ids.length>=3)faces.push({ids,n:p.p.n});
+  }
+  // prostorna mreža temena (za T-spojeve)
+  const HC=0.25,hash=new Map();
+  const hk=(x,y,z)=>x+','+y+','+z;
+  verts.forEach((v,i)=>{const k=hk(Math.floor(v[0]/HC),Math.floor(v[1]/HC),Math.floor(v[2]/HC));let l=hash.get(k);if(!l){l=[];hash.set(k,l);}l.push(i);});
+  const edges=new Map();
+  const tris=[];
+  for(const f of faces){
+    const ids=f.ids;
+    for(let i=1;i<ids.length-1;i++)tris.push([verts[ids[0]],verts[ids[i]],verts[ids[i+1]],f.n]);
+    for(let i=0;i<ids.length;i++){
+      const ia=ids[i],ib=ids[(i+1)%ids.length],A=verts[ia],B=verts[ib],d=G.sub(B,A),L2=G.dot(d,d);
+      if(L2<1e-12)continue;
+      const mid=[];
+      const x0=Math.floor((Math.min(A[0],B[0])-1e-4)/HC),x1=Math.floor((Math.max(A[0],B[0])+1e-4)/HC);
+      const y0=Math.floor((Math.min(A[1],B[1])-1e-4)/HC),y1=Math.floor((Math.max(A[1],B[1])+1e-4)/HC);
+      const z0=Math.floor((Math.min(A[2],B[2])-1e-4)/HC),z1=Math.floor((Math.max(A[2],B[2])+1e-4)/HC);
+      for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)for(let z=z0;z<=z1;z++){
+        const l=hash.get(hk(x,y,z));if(!l)continue;
+        for(const k of l){if(k===ia||k===ib)continue;const P=verts[k],ap=G.sub(P,A),t=G.dot(ap,d)/L2;
+          if(t<=1e-6||t>=1-1e-6)continue;const c=G.lerp(A,B,t);if(G.len(G.sub(P,c))<2e-4)mid.push([t,k]);}
+      }
+      mid.sort((p,q)=>p[0]-q[0]);
+      const chain=[ia,...mid.map(m=>m[1]),ib];
+      for(let j=0;j<chain.length-1;j++){
+        const a=chain[j],b=chain[j+1];if(a===b)continue;
+        const k=a<b?a+'_'+b:b+'_'+a;let e=edges.get(k);if(!e){e={a,b,ns:[]};edges.set(k,e);}e.ns.push(f.n);
+      }
+    }
+  }
+  const cosT=Math.cos(20*Math.PI/180),feat=[],smooth=[];
+  for(const e of edges.values()){
+    const A=verts[e.a],B=verts[e.b];
+    if(e.ns.length===2){
+      const c=G.dot(e.ns[0],e.ns[1]);
+      if(c<cosT)feat.push([A,B]);else if(c<1-1e-7)smooth.push([A,B,e.ns[0],e.ns[1]]);
+    }else if(e.ns.length===1)feat.push([A,B]);
+    else{let f=false;for(let i=0;i<e.ns.length;i++)for(let j=i+1;j<e.ns.length;j++)if(G.dot(e.ns[i],e.ns[j])<cosT&&G.dot(e.ns[i],e.ns[j])>-cosT)f=true;if(f)feat.push([A,B]);}
+  }
+  return {kind:'s',W,D,H,sol:s,tris,feat,smooth,_views:{}};
+}
+function mergeSegs(list){
+  const groups=new Map();
+  for(const s of list){
+    let dx=s[2]-s[0],dy=s[3]-s[1];const l=Math.hypot(dx,dy);if(l<1e-6)continue;dx/=l;dy/=l;
+    if(dx<-1e-9||(Math.abs(dx)<=1e-9&&dy<0)){dx=-dx;dy=-dy;}
+    const c=-dy*s[0]+dx*s[1];
+    const k=Math.round(dx*2e3)+','+Math.round(dy*2e3)+','+Math.round(c*2e3);
+    let g=groups.get(k);if(!g){g={dx,dy,c,iv:[]};groups.set(k,g);}
+    const t1=dx*s[0]+dy*s[1],t2=dx*s[2]+dy*s[3];g.iv.push([Math.min(t1,t2),Math.max(t1,t2)]);
+  }
+  const out=[];
+  for(const g of groups.values()){
+    g.iv.sort((a,b)=>a[0]-b[0]);let cur=null;
+    const emit=iv=>{const {dx,dy,c}=g;out.push([dx*iv[0]-dy*c,dy*iv[0]+dx*c,dx*iv[1]-dy*c,dy*iv[1]+dx*c]);};
+    for(const iv of g.iv){if(cur&&iv[0]<=cur[1]+1e-4)cur[1]=Math.max(cur[1],iv[1]);else{if(cur)emit(cur);cur=iv.slice();}}
+    if(cur)emit(cur);
+  }
+  return out;
+}
+function solidView(geo,kind){
+  if(geo._views[kind])return geo._views[kind];
+  const {W,D,H}=geo;let proj,dir,U,V;
+  if(kind==='n'){proj=p=>[p[0],p[2],p[1]];dir=[0,1,0];U=W;V=H;}
+  else if(kind==='t'){proj=p=>[p[0],p[1],H-p[2]];dir=[0,0,-1];U=W;V=D;}
+  else{proj=p=>[D-p[1],p[2],p[0]];dir=[1,0,0];U=D;V=H;}
+  const {vis,hid}=lineView(geo,proj,dir,0,0,U,V);
+  // ose rupa i dodatne tačke za spone
+  const centers=[],exU=[],exV=[],E=0.3;
+  for(const h of geo.sol.holes){
+    const r=h.d/2,Lh={n:D,t:H,b:W}[h.v],[a,b]=holeRange(h,Lh);
+    if(h.v===kind){centers.push([h.u-r-E,h.w,h.u+r+E,h.w],[h.u,h.w-r-E,h.u,h.w+r+E]);exU.push(h.u-r,h.u+r);exV.push(h.w-r,h.w+r);continue;}
+    if(h.v==='n'){ if(kind==='t')centers.push([h.u,a-E,h.u,b+E]); else centers.push([D-b-E,h.w,D-a+E,h.w]); }
+    else if(h.v==='t'){ if(kind==='n')centers.push([h.u,a-E,h.u,b+E]); else centers.push([D-h.w,a-E,D-h.w,b+E]); }
+    else { if(kind==='n')centers.push([a-E,h.w,b+E,h.w]); else centers.push([a-E,D-h.u,b+E,D-h.u]); }
+  }
+  return geo._views[kind]={U,V,vis,hid,centers,exU,exV};
+}
+function lineView(geo,proj,dir,X0,Y0,U,V){
+  const g=0.5,BW=Math.ceil((U-X0)/g)+2,BH=Math.ceil((V-Y0)/g)+2,bins=new Array(BW*BH),tr=[];
+  for(const t of geo.tris){
+    const a=proj(t[0]),b=proj(t[1]),c=proj(t[2]);
+    const area=(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);if(Math.abs(area)<1e-9)continue;
+    const i=tr.length;tr.push([a,b,c,area]);
+    const x0=Math.max(0,Math.floor((Math.min(a[0],b[0],c[0])-X0)/g-1e-6)),x1=Math.min(BW-1,Math.floor((Math.max(a[0],b[0],c[0])-X0)/g+1e-6));
+    const y0=Math.max(0,Math.floor((Math.min(a[1],b[1],c[1])-Y0)/g-1e-6)),y1=Math.min(BH-1,Math.floor((Math.max(a[1],b[1],c[1])-Y0)/g+1e-6));
+    for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++){const k=x+y*BW;(bins[k]||(bins[k]=[])).push(i);}
+  }
+  const occl=(u,v,d)=>{
+    const bx=Math.floor((u-X0)/g),by=Math.floor((v-Y0)/g);if(bx<0||by<0||bx>=BW||by>=BH)return false;
+    const L=bins[bx+by*BW];if(!L)return false;
+    for(const i of L){const [a,b,c,ar]=tr[i];
+      const w0=((b[0]-u)*(c[1]-v)-(b[1]-v)*(c[0]-u))/ar,w1=((c[0]-u)*(a[1]-v)-(c[1]-v)*(a[0]-u))/ar,w2=1-w0-w1;
+      if(w0<-1e-7||w1<-1e-7||w2<-1e-7)continue;
+      if(w0*a[2]+w1*b[2]+w2*c[2]<d-1e-3)return true;}
+    return false;
+  };
+  const segs=geo.feat.slice();
+  for(const s of geo.smooth){const f1=G.dot(s[2],dir)<-1e-6,f2=G.dot(s[3],dir)<-1e-6;if(f1!==f2)segs.push([s[0],s[1]]);}
+  const vis=[],hid=[];
+  for(const [A,B] of segs){
+    const a=proj(A),b=proj(B),l2=Math.hypot(b[0]-a[0],b[1]-a[1]);if(l2<1e-6)continue;
+    const n=Math.max(3,Math.ceil(l2/0.04)),st=[];
+    for(let i=0;i<n;i++){const t=(i+0.5)/n;st.push(occl(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t));}
+    for(let i=1;i<n-1;i++)if(st[i-1]===st[i+1]&&st[i]!==st[i-1])st[i]=st[i-1];
+    let s=0;
+    for(let i=1;i<=n;i++){if(i===n||st[i]!==st[s]){const t0=s/n,t1=i/n;
+      (st[s]?hid:vis).push([a[0]+(b[0]-a[0])*t0,a[1]+(b[1]-a[1])*t0,a[0]+(b[0]-a[0])*t1,a[1]+(b[1]-a[1])*t1]);s=i;}}
+  }
+  return {vis:mergeSegs(vis),hid:mergeSegs(hid)};
+}
+
+
+const BUILTIN_S_DEF=[
+  ['Blok s rupom',1,4,3,2,null,null,null,[['n',2,1,1]]],
+  ['Ploča s rupom',1,4,4,1,null,null,null,[['t',2,2,1.5]]],
+  ['Klin',1,3,3,3,null,null,['1..','#1.','##1'],[]],
+  ['Trostrana prizma',1,2,3,1,['21'],null,null,[]],
+  ['Blok s kosinom',1,3,3,2,['2##','###'],null,null,[]],
+  ['Polucilindar',1,2,3,1,['56'],null,null,[]],
+  ['Valjak',1,2,2,2,null,['56','87'],null,[]],
+  ['Ploča sa zakošenim uglovima',1,4,3,1,null,['2##1','####','3##4'],null,[]],
+  ['Ploča sa dve rupe',1,5,3,1,null,null,null,[['t',1.5,1.5,1],['t',3.5,1.5,1]]],
+  ['Blok s velikim otvorom',1,3,4,3,null,null,null,[['n',1.5,1.5,2]]],
+  ['Ploča sa zidom i rupom',1,4,4,2,null,null,['#...','####'],[['t',2,1.5,1.5]]],
+  ['Kućica s prozorom',2,4,3,3,['.21.','2##1','####'],null,null,[['n',2,1.5,1]]],
+  ['Piramida',2,4,4,2,['.21.','2##1'],null,['.21.','2##1'],[]],
+  ['Cev',2,2,2,3,null,['56','87'],null,[['t',1,1,1]]],
+  ['Ušica',2,2,2,3,['56','##','##'],null,null,[['n',1,2,1]]],
+  ['Ugaonik s rupama',2,4,3,3,['##..','##..','####'],null,null,[['t',3,1.5,1],['b',1.5,2,1,0,2]]],
+  ['Stepenasti blok s rupom',2,4,3,3,['..##','.###','####'],null,null,[['n',3,1.5,1.2]]],
+  ['Blok s polukružnim žlebom',2,4,3,2,null,null,null,[['n',2,2,2]]],
+  ['U-profil s rupom',2,4,3,3,['#..#','#..#','####'],null,null,[['b',1.5,2,1]]],
+  ['Zarubljeni blok',2,4,3,2,['2##1','####'],['2##1','####','3##4'],null,[]],
+  ['Ploča sa zaobljenim krajem',2,4,2,1,null,['###6','###7'],null,[['t',3,1,1]]],
+  ['Rampa',2,3,4,2,null,null,['##1.','###1'],[]],
+  ['Nosač s ušicama',3,2,5,3,['56','##','##'],null,['#...#','#...#','#####'],[['n',1,2,1]]],
+  ['Kosi blok s V-žlebom',3,4,3,2,['#12#','####'],null,['#1.','##1'],[]],
+  ['Zaobljeni blok s rupom',3,3,4,3,null,null,['5###','####','####'],[['n',1.5,1.5,1]]],
+  ['Viljuška s osovinom',3,3,4,2,null,['#.#','#.#','###','###'],null,[['b',1,1,1]]],
+  ['Ugaona piramida',3,3,3,3,['1..','#1.','##1'],null,['1..','#1.','##1'],[]],
+  ['Krov na četiri vode',3,4,2,1,['2##1'],null,['21'],[]],
+  ['Kosi blok s prorezom',3,3,4,3,null,['#.#','#.#','#.#','###'],['##1.','###1','####'],[]],
+  ['Klin s rupom',3,3,3,3,null,null,['1..','#1.','##1'],[['n',1.5,0.8,0.8]]],
+];
+
+// [naziv, težina, Š, D, V, nacrt, tlocrt, bokocrt, rupe[v,u,w,d,a,b], izrezi[v,oblik,u0,u1,w0,w1,a,b]]
+const SHEET_DEF=[
+ ['Vežba 1',1,5,3,3,['...##','##.##','#####'],null,null,[],[]],
+ ['Vežba 2',2,5,3,3,['..###','#####','#####'],null,null,[],[['n','#',0,1,1,2,0,3],['n','#',3.4,4.4,0,0.7,0,3]]],
+ ['Vežba 3',3,3,4,3,['###','#.#','#.#'],['5#6','###','###','###'],null,[['t',1.5,2.8,1,2,3],['b',2.5,1,0.8]],[]],
+ ['Vežba 4',2,5,3,3,['...2#','#..##','#####'],null,null,[],[['b','#',1,1.6,0.6,1,1,3]]],
+ ['Vežba 5',2,4,3,3,['####','##.#','##.#'],['####','.##.','.##.'],null,[],[]],
+ ['Vežba 6',1,3,4,3,null,null,['##..','###.','####'],[],[['n','#',2,3,1,3,3,4]]],
+ ['Vežba 7',2,5,3,3,['.2#1.','#####','#####'],null,null,[],[]],
+ ['Vežba 8',2,4,4,3,['..##','..##','####'],['####','####','####','.##.'],['##..','##..','####'],[],[['n','#',2.5,3.5,1.5,3,2,4]]],
+ ['Vežba 9',3,4,4,3,['####','#..#','#..#'],null,['##..','##..','####'],[['b',1,1.5,0.8]],[]],
+ ['Vežba 10',2,4,3,4,['#..#','#..#','#..#','####'],null,['#..','#..','###','###'],[],[]],
+ ['Vežba 11',1,5,3,3,['.#.#.','.###.','#####'],null,null,[],[]],
+ ['Vežba 12',2,4,4,2,['#12#','####'],null,['#12#','####'],[],[]],
+ ['Vežba 13',3,4,3,3,['####','##.#','##.#'],null,['###','#.#','#.#'],[],[]],
+ ['Vežba 14',1,4,3,2,['...#','####'],null,null,[['t',1.5,1.5,1.2]],[]],
+ ['Vežba 15',2,4,2,3,['#..#','#..#','####'],null,['56','##','##'],[['b',1,2,1]],[]],
+ ['Vežba 16',2,4,3,3,['..2#','.2##','####'],null,null,[],[['b','#',1,2,1,3,1,4]]],
+ ['Vežba 17',2,5,2,2,null,null,['56','87'],[],[['b','o',0.5,1.5,0.5,1.5,0,2]]],
+ ['Vežba 18',2,4,4,4,['#..#','#..#','####','####'],null,['##..','##..','####','####'],[],[]],
+ ['Vežba 19',2,4,3,3,['..##','..##','####'],null,null,[['t',1,1.5,1,0,1],['n',3,2,0.8]],[]],
+ ['Vežba 20',2,4,4,3,null,null,['##..','###.','####'],[['t',2,3,1.2]],[]],
+ ['Vežba 21',2,5,3,3,['...2#','2#.##','#####'],null,null,[],[]],
+ ['Vežba 22',2,5,4,3,['.###.','#####','##.##'],null,['###.','####','####'],[],[]],
+ ['Vežba 23',3,4,4,3,['#.##','#.##','####'],null,['##.#','##.#','####'],[],[]],
+ ['Vežba 24',3,4,3,3,['..2#','.2##','2###'],null,null,[],[['t','#',0.3,3,1.3,1.7,1.2,3]]],
+ ['Vežba 25',1,4,3,3,['####','##..','####'],null,null,[],[]],
+ ['Vežba 26',1,3,5,3,null,null,['#####','##...','#####'],[],[]],
+ ['Vežba 27',2,4,3,3,['..##','.###','####'],null,null,[['n',3,1.5,1.2]],[]],
+ ['Vežba 28',2,5,4,3,['###..','###..','#####'],null,null,[],[['t','#',2,3,0,1,0,2]]],
+ ['Vežba 29',2,3,4,3,null,null,['##..','##1.','###1'],[],[['n','#',1,2,2,3,2,4]]],
+ ['Vežba 30',3,5,4,3,['##.##','#...#','#####'],null,['##.#','#..#','####'],[],[]],
+ ['Vežba 31',3,5,3,3,['..2##','.2###','#####'],null,null,[],[['b','#',1,1.6,1,3,0,5]]],
+ ['Vežba 32',3,4,4,3,['####','#..#','####'],null,null,[],[['n','#',1.5,2.5,2,3,0,4]]],
+ ['Vežba 33',2,4,4,3,['#.##','####','####'],null,['##..','####','####'],[],[]],
+ ['Vežba 34',3,4,3,3,['5##6','####','####'],null,null,[['n',2,1.5,1]],[['n','#',3,4,0,1,0,3]]],
+ ['Vežba 35',2,4,4,4,null,null,['#...','##..','###.','####'],[],[]],
+ ['Vežba 36',3,5,3,3,['..2##','..###','#####'],null,null,[],[['b','#',1,1.6,1,3,1,5]]],
+ ['Vežba 37',3,4,4,3,['####','#..#','####'],null,null,[],[['n','#',1,3,2,3,1,3]]],
+ ['Vežba 38',2,4,4,3,['##.#','####','####'],null,['##..','####','####'],[],[]],
+ ['Vežba 39',2,4,4,3,null,['.##.','####','####','.##.'],['#...','##..','####'],[],[]],
+ ['Vežba 40',3,4,4,4,null,['###.','..#.','..#.','.###'],null,[],[]],
+];
+
+const BUILTIN_S=BUILTIN_S_DEF.concat(SHEET_DEF).map((d,i)=>({id:'s'+i,kind:'s',name:d[0],level:d[1],builtin:true,
+  sol:normSolid({W:d[2],D:d[3],H:d[4],f:d[5],t:d[6],s:d[7],holes:d[8].map(h=>({v:h[0],u:h[1],w:h[2],d:h[3],a:h[4],b:h[5]})),
+    cuts:(d[9]||[]).map(q=>({v:q[0],ch:q[1],u0:q[2],u1:q[3],w0:q[4],w1:q[5],a:q[6],b:q[7]}))})}));
 
 /* ---------- encode / storage ---------- */
-function encode(t){
+function encodeV(t){
   const v=t.vox;let hex='';
   for(let i=0;i<v.a.length;i+=4){let n=0;for(let k=0;k<4;k++)if(v.a[i+k])n|=1<<k;hex+=n.toString(16);}
   return ['OP1',encodeURIComponent(t.name),t.level,v.W,v.D,v.H,hex].join('|');
@@ -336,28 +777,55 @@ function decode(s){
   if(hex.length<Math.ceil(v.a.length/4))throw new Error('len');
   for(let i=0;i<v.a.length;i++){const n=parseInt(hex[i>>2],16);if(isNaN(n))throw new Error('hex');v.a[i]=(n>>(i&3))&1;}
   let name='Predmet';try{name=decodeURIComponent(p[1])||name;}catch(e){}
-  return {name:name.slice(0,40),level:Math.min(3,Math.max(1,+p[2]||1)),vox:v};
+  return {kind:'v',name:name.slice(0,40),level:Math.min(3,Math.max(1,+p[2]||1)),vox:v};
 }
-function loadCustom(){
-  try{const raw=localStorage.getItem(STORE_KEY);if(!raw)return [];
-    return JSON.parse(raw).map(o=>{try{const d=decode(o.code);return {id:o.id,name:d.name,level:d.level,vox:d.vox,builtin:false};}catch(e){return null;}}).filter(Boolean);
+function encodeS(t){
+  const s=t.sol;
+  return ['OP2',encodeURIComponent(t.name),t.level,s.W,s.D,s.H,s.f.join('/'),s.t.join('/'),s.s.join('/'),
+    s.holes.map(h=>[h.v,h.u,h.w,h.d,h.a,h.b].join(',')).join(';'),
+    s.cuts.map(c=>[c.v,c.ch,c.u0,c.u1,c.w0,c.w1,c.a,c.b].join(',')).join(';')].join('|');
+}
+function decodeS(str){
+  const p=String(str).trim().split('|');
+  if((p.length!==10&&p.length!==11)||p[0]!=='OP2')throw new Error('format');
+  const opt=x=>x===''||x==null?'':+x;
+  const cuts=p[10]?p[10].split(';').map(x=>{const q=x.split(',');return {v:q[0],ch:q[1],u0:+q[2],u1:+q[3],w0:+q[4],w1:+q[5],a:opt(q[6]),b:opt(q[7])};}):[];
+  const holes=p[9]?p[9].split(';').map(x=>{const q=x.split(',');return {v:q[0],u:+q[1],w:+q[2],d:+q[3],a:q[4]===''||q[4]==null?'':+q[4],b:q[5]===''||q[5]==null?'':+q[5]};}):[];
+  const W=+p[3],D=+p[4],H=+p[5];
+  if(!(W>0&&D>0&&H>0&&W<=8&&D<=8&&H<=8))throw new Error('dim');
+  let name='Predmet';try{name=decodeURIComponent(p[1])||name;}catch(e){}
+  return {kind:'s',name:name.slice(0,40),level:Math.min(3,Math.max(1,+p[2]||1)),sol:normSolid({W,D,H,f:p[6].split('/'),t:p[7].split('/'),s:p[8].split('/'),holes,cuts})};
+}
+function decodeAny(s){const t=String(s).trim();return t.startsWith('OP2|')?decodeS(t):decode(t);}
+const encodeAny=t=>t.kind==='s'?encodeS(t):encodeV(t);
+function loadCustom(k){
+  try{const raw=localStorage.getItem(STORE[k]);if(!raw)return [];
+    return JSON.parse(raw).map(o=>{try{const d=decodeAny(o.code);if(d.kind!==k)return null;return Object.assign(d,{id:o.id,builtin:false});}catch(e){return null;}}).filter(Boolean);
   }catch(e){return [];}
 }
-function saveCustom(){
-  try{localStorage.setItem(STORE_KEY,JSON.stringify(custom.map(t=>({id:t.id,code:encode(t)}))));return true;}catch(e){return false;}
+const custom={v:loadCustom('v'),s:loadCustom('s')};
+function saveCustom(k){
+  try{localStorage.setItem(STORE[k],JSON.stringify(custom[k].map(t=>({id:t.id,code:encodeAny(t)}))));return true;}catch(e){return false;}
 }
-let custom=loadCustom();
-let tasks=[];
-function rebuildTasks(){tasks=BUILTIN.concat(custom);}
-rebuildTasks();
+let tab='v';
+const curIdx={v:0,s:0};
+try{const t=localStorage.getItem('orto-tab');if(t==='s')tab='s';
+  const a=+localStorage.getItem('orto-cur'),b=+localStorage.getItem('orto-cur-s');if(a>=0)curIdx.v=a;if(b>=0)curIdx.s=b;}catch(e){}
+const taskList=k=>(k||tab)==='v'?BUILTIN_V.concat(custom.v):BUILTIN_S.concat(custom.s);
+let tasks=taskList();
 let cur=0;
-try{const s=+localStorage.getItem('orto-cur');if(s>=0&&s<tasks.length)cur=s;}catch(e){}
+
+/* ---------- geometrija zadatka ---------- */
+function geoOf(t){
+  if(!t._geo)t._geo=t.kind==='s'?buildSolidGeo(t.sol):{kind:'v',W:t.vox.W,D:t.vox.D,H:t.vox.H,vox:t.vox,_views:{}};
+  return t._geo;
+}
 
 /* ---------- 3D ---------- */
 const view=$('view3d');
 let renderer,scene,camera,root,content,arrows,cubeLines;
-let yaw=0.66,pitch=0.5,target=null,curVox=null;
-const HOME={yaw:0.66,pitch:0.5};
+const HOME={v:{yaw:0.66,pitch:0.5},s:{yaw:Math.PI/4,pitch:Math.atan(1/Math.SQRT2)}};
+let yaw=0.66,pitch=0.5,target=null,curGeo=null;
 const has3D=typeof THREE!=='undefined';
 
 if(has3D){
@@ -391,43 +859,48 @@ function disposeGroup(g){
   while(g.children.length)g.remove(g.children[0]);
 }
 
-function buildObject(v){
-  curVox=v;
+function buildObject(geo){
+  curGeo=geo;
   if(!has3D)return;
-  disposeGroup(content);
-  if(!v){render();return;}
-  const W=v.W,D=v.D,H=v.H;
+  disposeGroup(content);cubeLines=null;
+  if(!geo){render();return;}
+  const W=geo.W,D=geo.D,H=geo.H;
   const T=(cx,cy,cz)=>[cx-W/2,cz-H/2,D/2-cy];
   const pos=[],nor=[],cl=[],el=[];
-  const dirs=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
-  for(let z=0;z<H;z++)for(let y=0;y<D;y++)for(let x=0;x<W;x++){
-    if(!get(v,x,y,z))continue;
-    for(const d of dirs){
-      if(get(v,x+d[0],y+d[1],z+d[2]))continue;
-      const ax=d[0]?0:(d[1]?1:2),s=d[ax],b=(ax+1)%3,c=(ax+2)%3;
-      const base=[x,y,z];if(s>0)base[ax]+=1;
-      const cs=[[0,0],[1,0],[1,1],[0,1]].map(([i,j])=>{const p=base.slice();p[b]+=i;p[c]+=j;return T(p[0],p[1],p[2]);});
-      const n=[d[0],d[2],-d[1]];
-      [0,1,2,0,2,3].forEach(k=>{pos.push(...cs[k]);nor.push(...n);});
-      for(let k=0;k<4;k++)cl.push(...cs[k],...cs[(k+1)%4]);
+  if(geo.kind==='v'){
+    const v=geo.vox;
+    const dirs=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+    for(let z=0;z<H;z++)for(let y=0;y<D;y++)for(let x=0;x<W;x++){
+      if(!get(v,x,y,z))continue;
+      for(const d of dirs){
+        if(get(v,x+d[0],y+d[1],z+d[2]))continue;
+        const ax=d[0]?0:(d[1]?1:2),s=d[ax],b=(ax+1)%3,c=(ax+2)%3;
+        const base=[x,y,z];if(s>0)base[ax]+=1;
+        const cs=[[0,0],[1,0],[1,1],[0,1]].map(([i,j])=>{const p=base.slice();p[b]+=i;p[c]+=j;return T(p[0],p[1],p[2]);});
+        const n=[d[0],d[2],-d[1]];
+        [0,1,2,0,2,3].forEach(k=>{pos.push(...cs[k]);nor.push(...n);});
+        for(let k=0;k<4;k++)cl.push(...cs[k],...cs[(k+1)%4]);
+      }
     }
+    for(let x=0;x<W;x++)for(let j=0;j<=D;j++)for(let k=0;k<=H;k++)
+      if(realEdge(get(v,x,j-1,k-1),get(v,x,j,k-1),get(v,x,j-1,k),get(v,x,j,k)))el.push(...T(x,j,k),...T(x+1,j,k));
+    for(let y=0;y<D;y++)for(let i=0;i<=W;i++)for(let k=0;k<=H;k++)
+      if(realEdge(get(v,i-1,y,k-1),get(v,i,y,k-1),get(v,i-1,y,k),get(v,i,y,k)))el.push(...T(i,y,k),...T(i,y+1,k));
+    for(let z=0;z<H;z++)for(let i=0;i<=W;i++)for(let j=0;j<=D;j++)
+      if(realEdge(get(v,i-1,j-1,z),get(v,i,j-1,z),get(v,i-1,j,z),get(v,i,j,z)))el.push(...T(i,j,z),...T(i,j,z+1));
+  } else {
+    for(const t of geo.tris){const n=[t[3][0],t[3][2],-t[3][1]];for(let k=0;k<3;k++){pos.push(...T(t[k][0],t[k][1],t[k][2]));nor.push(...n);}}
+    for(const e of geo.feat)el.push(...T(e[0][0],e[0][1],e[0][2]),...T(e[1][0],e[1][1],e[1][2]));
   }
-  // stvarne ivice tela
-  for(let x=0;x<W;x++)for(let j=0;j<=D;j++)for(let k=0;k<=H;k++)
-    if(realEdge(get(v,x,j-1,k-1),get(v,x,j,k-1),get(v,x,j-1,k),get(v,x,j,k)))el.push(...T(x,j,k),...T(x+1,j,k));
-  for(let y=0;y<D;y++)for(let i=0;i<=W;i++)for(let k=0;k<=H;k++)
-    if(realEdge(get(v,i-1,y,k-1),get(v,i,y,k-1),get(v,i-1,y,k),get(v,i,y,k)))el.push(...T(i,y,k),...T(i,y+1,k));
-  for(let z=0;z<H;z++)for(let i=0;i<=W;i++)for(let j=0;j<=D;j++)
-    if(realEdge(get(v,i-1,j-1,z),get(v,i,j-1,z),get(v,i-1,j,z),get(v,i,j,z)))el.push(...T(i,j,z),...T(i,j,z+1));
-
   const g=new THREE.BufferGeometry();
   g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
   g.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3));
-  const mesh=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:0xf4c96b,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1}));
-  content.add(mesh);
-  const cg=new THREE.BufferGeometry();cg.setAttribute('position',new THREE.Float32BufferAttribute(cl,3));
-  cubeLines=new THREE.LineSegments(cg,new THREE.LineBasicMaterial({color:0xb39a62,transparent:true,opacity:0.75}));
-  cubeLines.visible=$('optCubes').checked;content.add(cubeLines);
+  content.add(new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:0xf4c96b,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1})));
+  if(cl.length){
+    const cg=new THREE.BufferGeometry();cg.setAttribute('position',new THREE.Float32BufferAttribute(cl,3));
+    cubeLines=new THREE.LineSegments(cg,new THREE.LineBasicMaterial({color:0xb39a62,transparent:true,opacity:0.75}));
+    cubeLines.visible=$('optCubes').checked;content.add(cubeLines);
+  }
   const eg=new THREE.BufferGeometry();eg.setAttribute('position',new THREE.Float32BufferAttribute(el,3));
   content.add(new THREE.LineSegments(eg,new THREE.LineBasicMaterial({color:0x1f2933})));
 
@@ -439,7 +912,7 @@ function buildObject(v){
     const origin=new THREE.Vector3(...tip).addScaledVector(d,-L);
     const hex=parseInt(col.slice(1),16);
     const a=new THREE.ArrowHelper(d,origin,L,hex,0.5,0.36);
-    a.line.material.linewidth=2;arrows.add(a);
+    arrows.add(a);
     const s=makeLabel(txt,col);s.position.copy(origin).addScaledVector(d,-0.55);arrows.add(s);
   };
   mk([0,0,-1],[0,0,D/2+gap],COLORS.n,'N');
@@ -454,7 +927,7 @@ function fitCamera(){
   if(!has3D)return;
   const w=view.clientWidth,h=view.clientHeight;if(!w||!h)return;
   renderer.setSize(w,h);
-  const v=curVox;let R=2;
+  const v=curGeo;let R=2;
   if(v){R=0.5*Math.sqrt(v.W*v.W+v.D*v.D+v.H*v.H)+($('optArrows').checked?2.3:0.4);}
   const half=R*1.04,asp=w/h;
   if(asp>=1){camera.top=half;camera.bottom=-half;camera.right=half*asp;camera.left=-half*asp;}
@@ -475,6 +948,7 @@ function snapTo(ty,tp){
   const TAU=Math.PI*2;const y=ty+TAU*Math.round((yaw-ty)/TAU);
   target={yaw:y,pitch:tp};
 }
+function homeView(){yaw=HOME[tab].yaw;pitch=HOME[tab].pitch;target=null;render();}
 // drag
 let drag=null;
 view.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;drag={x:e.clientX,y:e.clientY};target=null;try{view.setPointerCapture(e.pointerId);}catch(_){}});
@@ -488,7 +962,7 @@ new ResizeObserver(fitCamera).observe(view);
 
 $('rotL').onclick=()=>{target={yaw:(target?target.yaw:yaw)-Math.PI/2,pitch:target?target.pitch:pitch};};
 $('rotR').onclick=()=>{target={yaw:(target?target.yaw:yaw)+Math.PI/2,pitch:target?target.pitch:pitch};};
-$('isoBtn').onclick=()=>snapTo(HOME.yaw,HOME.pitch);
+$('isoBtn').onclick=()=>snapTo(HOME[tab].yaw,HOME[tab].pitch);
 $('snapN').onclick=()=>snapTo(0,0);
 $('snapT').onclick=()=>snapTo(0,Math.PI/2);
 $('snapB').onclick=()=>snapTo(Math.PI/2,0);
@@ -530,11 +1004,17 @@ function runs(set,U,V){
   for(let k=0;k<=U;k++){let s=-1;for(let q=0;q<=V;q++){const on=q<V&&set.has('v'+k+','+q);if(on&&s<0)s=q;if(!on&&s>=0){out.push([k,s,k,q]);s=-1;}}}
   return out;
 }
+function viewOf(geo,k){
+  if(geo.kind==='s')return solidView(geo,k);
+  if(!geo._views[k]){const d=viewData(geo.vox,k);geo._views[k]={U:d.U,V:d.V,dep:d.dep,vis:runs(d.vis,d.U,d.V),hid:runs(d.hid,d.U,d.V),centers:[],exU:[],exV:[]};}
+  return geo._views[k];
+}
 function rrect(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+const rd=x=>Math.round(x*1000)/1000;
 function drawSolution(){
-  const cv=$('sol'),g=cv.getContext('2d'),v=curVox,wrap=$('solWrap');
-  if(!v){cv.width=cv.height=0;return;}
-  const W=v.W,D=v.D,H=v.H;
+  const cv=$('sol'),g=cv.getContext('2d'),geo=curGeo,wrap=$('solWrap');
+  if(!geo){cv.width=cv.height=0;return;}
+  const W=geo.W,D=geo.D,H=geo.H;
   const cols=1+W+2+D+1,rows=2+H+2+D+1;
   let c=Math.floor((wrap.clientWidth||400)/cols);
   c=Math.max(12,Math.min(46,c));
@@ -562,62 +1042,50 @@ function drawSolution(){
     g.textBaseline='bottom';g.fillText('y',ax+5,chei-c*0.3);
     g.textAlign='right';g.textBaseline='top';g.fillText('0',ax-4,ay+3);
   }
+  const VW={n:viewOf(geo,'n'),t:viewOf(geo,'t'),b:viewOf(geo,'b')};
+  const OR={n:[1,2],b:[1+W+2,2],t:[1,2+H+2]};
+  const PX=(k,u,q)=>[(OR[k][0]+u)*c,(OR[k][1]+VW[k].V-q)*c];
+  const showH=$('optHidden').checked;
   if($('optSpone').checked){
-    const showH=$('optHidden').checked;
-    const VD={n:viewData(v,'n'),t:viewData(v,'t'),b:viewData(v,'b')};
-    const OR={n:[1,2],b:[1+W+2,2],t:[1,2+H+2]};
-    const segs=k=>{const d=VD[k];const S=new Set(d.vis);if(showH)d.hid.forEach(x=>S.add(x));return S;};
-    const PX=(k,u,q)=>[(OR[k][0]+u)*c,(OR[k][1]+VD[k].V-q)*c];
-    // tačke ivica duž uspravnih pravaca (pozicija u) – najbliža tačka linije gledano odozdo (dir=-1) ili odozgo (dir=+1)
-    function hitsU(k,fromBelow){
-      const d=VD[k],S=segs(k),out=[];
-      for(let u=0;u<=d.U;u++){
-        let has=false,best=fromBelow?Infinity:-Infinity;
-        for(let q=0;q<d.V;q++)if(S.has('v'+u+','+q)){has=true;best=fromBelow?Math.min(best,q):Math.max(best,q+1);}
-        if(!has)continue;
-        for(let q=0;q<=d.V;q++)if(S.has('h'+q+','+u)||S.has('h'+q+','+(u-1)))best=fromBelow?Math.min(best,q):Math.max(best,q);
-        out.push([u,best]);
-      }
-      return out;
-    }
-    // tačke ivica duž vodoravnih pravaca (pozicija q) – najbliža gledano zdesna (fromRight) ili sleva
-    function hitsV(k,fromRight){
-      const d=VD[k],S=segs(k),out=[];
-      for(let q=0;q<=d.V;q++){
-        let has=false,best=fromRight?-Infinity:Infinity;
-        for(let u=0;u<d.U;u++)if(S.has('h'+q+','+u)){has=true;best=fromRight?Math.max(best,u+1):Math.min(best,u);}
-        if(!has)continue;
-        for(let u=0;u<=d.U;u++)if(S.has('v'+u+','+q)||S.has('v'+u+','+(q-1)))best=fromRight?Math.max(best,u):Math.min(best,u);
-        out.push([q,best]);
-      }
-      return out;
-    }
+    const segsOf=k=>showH?VW[k].vis.concat(VW[k].hid):VW[k].vis;
+    const posOf=k=>{
+      const us=new Set(),vs=new Set();
+      for(const s of segsOf(k)){if(Math.hypot(s[2]-s[0],s[3]-s[1])<0.3)continue;us.add(rd(s[0]));us.add(rd(s[2]));vs.add(rd(s[1]));vs.add(rd(s[3]));}
+      VW[k].exU.forEach(x=>us.add(rd(x)));VW[k].exV.forEach(x=>vs.add(rd(x)));
+      return {us:[...us],vs:[...vs]};
+    };
+    // najbliža tačka crteža duž uspravne prave u (odozdo ili odozgo)
+    const hitU=(k,u,low)=>{let best=null;for(const s of segsOf(k)){const [x1,y1,x2,y2]=s;
+      if(u<Math.min(x1,x2)-1e-6||u>Math.max(x1,x2)+1e-6)continue;
+      const vs=Math.abs(x2-x1)<1e-9?[y1,y2]:[y1+(u-x1)*(y2-y1)/(x2-x1)];
+      for(const v of vs)if(best===null||(low?v<best:v>best))best=v;}return best;};
+    // najbliža tačka duž vodoravne prave v (zdesna ili sleva)
+    const hitV=(k,v,right)=>{let best=null;for(const s of segsOf(k)){const [x1,y1,x2,y2]=s;
+      if(v<Math.min(y1,y2)-1e-6||v>Math.max(y1,y2)+1e-6)continue;
+      const us=Math.abs(y2-y1)<1e-9?[x1,x2]:[x1+(v-y1)*(x2-x1)/(y2-y1)];
+      for(const u of us)if(best===null||(right?u>best:u<best))best=u;}return best;};
     g.lineWidth=1.3;g.setLineDash([5,4]);g.lineCap='butt';
-    const line=(col,pts)=>{g.strokeStyle=col;g.beginPath();g.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)g.lineTo(pts[i][0],pts[i][1]);g.stroke();};
-    if(revealed.n){
-      for(const [u,q] of hitsU('n',true)){const p=PX('n',u,q);line(COLORS.n,[p,[p[0],ay]]);}
-      for(const [q,u] of hitsV('n',true)){const p=PX('n',u,q);line(COLORS.n,[p,[ax,p[1]]]);}
+    const line=(col,a,b)=>{g.strokeStyle=col;g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke();};
+    if(revealed.n){const P=posOf('n');
+      for(const u of P.us){const q=hitU('n',u,true);if(q===null)continue;const p=PX('n',u,q);line(COLORS.n,p,[p[0],ay]);}
+      for(const q of P.vs){const u=hitV('n',q,true);if(u===null)continue;const p=PX('n',u,q);line(COLORS.n,p,[ax,p[1]]);}
     }
-    if(revealed.t){
-      for(const [u,q] of hitsU('t',false)){const p=PX('t',u,q);line(COLORS.t,[p,[p[0],ay]]);}
-      for(const [q,u] of hitsV('t',true)){
-        const p=PX('t',u,q),r=p[1]-ay;
-        g.strokeStyle=COLORS.t;g.beginPath();g.moveTo(p[0],p[1]);g.lineTo(ax,p[1]);g.arc(ax,ay,r,Math.PI/2,0,true);g.stroke();
-      }
+    if(revealed.t){const P=posOf('t');
+      for(const u of P.us){const q=hitU('t',u,false);if(q===null)continue;const p=PX('t',u,q);line(COLORS.t,p,[p[0],ay]);}
+      for(const q of P.vs){const u=hitV('t',q,true);if(u===null)continue;const p=PX('t',u,q),r=p[1]-ay;if(r<=0)continue;
+        g.strokeStyle=COLORS.t;g.beginPath();g.moveTo(p[0],p[1]);g.lineTo(ax,p[1]);g.arc(ax,ay,r,Math.PI/2,0,true);g.stroke();}
     }
-    if(revealed.b){
-      for(const [u,q] of hitsU('b',true)){const p=PX('b',u,q);line(COLORS.b,[p,[p[0],ay]]);}
-      for(const [q,u] of hitsV('b',false)){const p=PX('b',u,q);line(COLORS.b,[p,[ax,p[1]]]);}
+    if(revealed.b){const P=posOf('b');
+      for(const u of P.us){const q=hitU('b',u,true);if(q===null)continue;const p=PX('b',u,q);line(COLORS.b,p,[p[0],ay]);}
+      for(const q of P.vs){const u=hitV('b',q,false);if(u===null)continue;const p=PX('b',u,q);line(COLORS.b,p,[ax,p[1]]);}
     }
     g.setLineDash([]);
     g.fillStyle='#4b5563';g.beginPath();g.arc(ax,ay,2.5,0,Math.PI*2);g.fill();
   }
-  const views=[['n',1,2],['b',1+W+2,2],['t',1,2+H+2]];
   const letters={n:'N',t:'T',b:'B'};
-  for(const [k,cx,cy] of views){
-    const vd=viewData(v,k),ox=cx*c,oy=cy*c,col=COLORS[k];
+  for(const k of ['n','b','t']){
+    const vd=VW[k],ox=OR[k][0]*c,oy=OR[k][1]*c,col=COLORS[k];
     const wpx=vd.U*c,hpx=vd.V*c;
-    // oznaka
     const r=Math.min(c*0.42,15);
     g.fillStyle=col;g.beginPath();g.arc(ox+r,oy-r-5,r,0,Math.PI*2);g.fill();
     g.fillStyle='#fff';g.font='900 '+Math.round(r*1.2)+'px Nunito, Arial, sans-serif';g.textAlign='center';g.textBaseline='middle';
@@ -630,18 +1098,23 @@ function drawSolution(){
       continue;
     }
     const P=(u,q)=>[ox+u*c,oy+(vd.V-q)*c];
-    if($('optFill').checked){
+    if($('optFill').checked&&vd.dep){
       g.fillStyle=col+'1f';
       for(let u=0;u<vd.U;u++)for(let q=0;q<vd.V;q++)if(vd.dep[u+q*vd.U]>=0){const p=P(u,q+1);g.fillRect(p[0],p[1],c,c);}
     }
-    g.strokeStyle='#1f2933';
-    if($('optHidden').checked&&vd.hid.size){
-      g.lineWidth=Math.max(1.5,c*0.055);g.lineCap='butt';g.setLineDash([Math.max(4,c*0.26),Math.max(3,c*0.16)]);
-      g.beginPath();for(const s of runs(vd.hid,vd.U,vd.V)){const a=P(s[0],s[1]),b=P(s[2],s[3]);g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);}g.stroke();
+    if(vd.centers.length){
+      g.strokeStyle='#4b5563';g.lineWidth=1;g.lineCap='butt';g.setLineDash([c*0.45,c*0.12,c*0.06,c*0.12]);
+      g.beginPath();for(const s of vd.centers){const a=P(s[0],s[1]),b=P(s[2],s[3]);g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);}g.stroke();
       g.setLineDash([]);
     }
-    g.lineWidth=Math.max(2.2,c*0.095);g.lineCap='square';
-    g.beginPath();for(const s of runs(vd.vis,vd.U,vd.V)){const a=P(s[0],s[1]),b=P(s[2],s[3]);g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);}g.stroke();
+    g.strokeStyle='#1f2933';
+    if(showH&&vd.hid.length){
+      g.lineWidth=Math.max(1.5,c*0.055);g.lineCap='butt';g.setLineDash([Math.max(4,c*0.26),Math.max(3,c*0.16)]);
+      g.beginPath();for(const s of vd.hid){const a=P(s[0],s[1]),b=P(s[2],s[3]);g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);}g.stroke();
+      g.setLineDash([]);
+    }
+    g.lineWidth=Math.max(2.2,c*0.095);g.lineCap='round';g.lineJoin='round';
+    g.beginPath();for(const s of vd.vis){const a=P(s[0],s[1]),b=P(s[2],s[3]);g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);}g.stroke();
   }
 }
 function updateRevealButtons(){
@@ -657,20 +1130,25 @@ $('hideAll').onclick=()=>setReveal(false);
 new ResizeObserver(()=>drawSolution()).observe($('solWrap'));
 
 /* ---------- list / selection ---------- */
+const editing=()=>!!(ed||sed);
 function esc(s){return String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
 function renderList(){
   const list=$('list');list.innerHTML='';
   tasks.forEach((t,i)=>{
     const b=document.createElement('button');
-    b.className='item'+(i===cur&&!ed?' active':'');
+    b.className='item'+(i===cur&&!editing()?' active':'');
     b.innerHTML='<span class="num">'+(i+1)+'</span><span class="nm">'+esc(t.name)+(t.builtin?'':' <span class="mine">★ moj</span>')+'</span><span class="lv lv'+t.level+'">'+LV[t.level]+'</span>';
     b.onclick=()=>select(i);
     list.appendChild(b);
   });
 }
 function updateHeader(){
-  if(ed){
-    $('taskNum').textContent=ed.editId?'Izmena':'Novi predmet';
+  $('optCubesL').classList.toggle('hidden',tab!=='v');
+  $('optFillL').classList.toggle('hidden',tab!=='v');
+  $('tabV').classList.toggle('on',tab==='v');$('tabS').classList.toggle('on',tab==='s');
+  if(editing()){
+    const id=ed?ed.editId:sed.editId;
+    $('taskNum').textContent=id?'Izmena':'Novi predmet';
     $('taskName').textContent='pregled';$('taskLv').className='lv hidden';
     $('taskActions').classList.add('hidden');return;
   }
@@ -684,21 +1162,30 @@ function updateHeader(){
   $('editBtn').textContent=t.builtin?'✎ Napravi kopiju i izmeni':'✎ Izmeni';
 }
 function select(i){
-  if(ed)closeEditor(false);
-  cur=Math.max(0,Math.min(tasks.length-1,i));
-  try{localStorage.setItem('orto-cur',String(cur));}catch(e){}
+  if(editing())closeEditors();
+  tasks=taskList();
+  cur=Math.max(0,Math.min(tasks.length-1,i|0));
+  curIdx[tab]=cur;
+  try{localStorage.setItem(tab==='v'?'orto-cur':'orto-cur-s',String(cur));}catch(e){}
   revealed.n=revealed.t=revealed.b=false;updateRevealButtons();
-  buildObject(tasks[cur].vox);
-  yaw=HOME.yaw;pitch=HOME.pitch;target=null;render();
+  buildObject(geoOf(tasks[cur]));
+  homeView();
   updateHeader();renderList();drawSolution();
   const a=$('list').children[cur];if(a&&a.scrollIntoView)a.scrollIntoView({block:'nearest',inline:'nearest'});
 }
+function setTab(k){
+  if(editing())closeEditors();
+  tab=k;try{localStorage.setItem('orto-tab',k);}catch(e){}
+  tasks=taskList();select(curIdx[k]);
+}
+$('tabV').onclick=()=>setTab('v');
+$('tabS').onclick=()=>setTab('s');
 $('prevBtn').onclick=()=>select((cur-1+tasks.length)%tasks.length);
 $('nextBtn').onclick=()=>select((cur+1)%tasks.length);
 document.addEventListener('keydown',e=>{
   if(e.target.closest('input,textarea,select'))return;
   if(!$('modal').classList.contains('hidden'))return;
-  if(ed)return;
+  if(editing())return;
   if(e.key==='ArrowRight'){$('nextBtn').click();e.preventDefault();}
   else if(e.key==='ArrowLeft'){$('prevBtn').click();e.preventDefault();}
   else if(e.key===' '){setReveal(!(revealed.n&&revealed.t&&revealed.b));e.preventDefault();}
@@ -708,7 +1195,7 @@ $('delBtn').onclick=()=>{
   const t=tasks[cur];if(t.builtin)return;
   if(!delArmed){delArmed=true;$('delBtn').textContent='Klikni ponovo za brisanje';$('delBtn').classList.add('warn');
     clearTimeout(delTimer);delTimer=setTimeout(()=>{delArmed=false;$('delBtn').textContent='Obriši';$('delBtn').classList.remove('warn');},3500);return;}
-  custom=custom.filter(c=>c.id!==t.id);saveCustom();rebuildTasks();select(Math.min(cur,tasks.length-1));
+  custom[tab]=custom[tab].filter(c=>c.id!==t.id);saveCustom(tab);select(Math.min(cur,taskList().length-1));
 };
 
 /* ---------- modal (kod zadatka) ---------- */
@@ -723,7 +1210,7 @@ $('mClose').onclick=closeModal;
 $('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal();});
 $('mOk').onclick=()=>{if(modalAction)modalAction();};
 $('shareBtn').onclick=()=>{
-  const code=encode(tasks[cur]);
+  const code=encodeAny(tasks[cur]);
   openModal('Kod zadatka','Kopiraj ovaj kod i na drugom računaru ga nalepi preko „Učitaj kod zadatka“.',code,'Kopiraj',()=>{
     const done=()=>{$('mMsg').textContent='Kopirano!';$('mMsg').className='msg ok';};
     const fallback=()=>{$('mArea').select();try{if(document.execCommand('copy')){done();return;}}catch(e){}$('mMsg').textContent='Označi tekst i kopiraj ručno (Ctrl+C).';};
@@ -731,35 +1218,41 @@ $('shareBtn').onclick=()=>{
   });
 };
 $('importBtn').onclick=()=>{
-  openModal('Učitaj kod zadatka','Nalepi kod koji počinje sa OP1|','','Učitaj',()=>{
+  openModal('Učitaj kod zadatka','Nalepi kod koji počinje sa OP1| (kockice) ili OP2| (izometrija).','','Učitaj',()=>{
     try{
-      const d=decode($('mArea').value);
-      const t={id:'c'+Date.now(),name:d.name,level:d.level,vox:d.vox,builtin:false};
-      custom.push(t);const ok=saveCustom();rebuildTasks();closeModal();select(tasks.length-1);
+      const d=decodeAny($('mArea').value);
+      const t=Object.assign(d,{id:'c'+Date.now(),builtin:false});
+      custom[d.kind].push(t);const ok=saveCustom(d.kind);closeModal();
+      tab=d.kind;try{localStorage.setItem('orto-tab',tab);}catch(e){}
+      tasks=taskList();select(tasks.length-1);
       if(!ok)flash('Predmet je učitan, ali ovaj pregledač ne može trajno da ga sačuva.');
     }catch(e){$('mMsg').textContent='Kod nije ispravan. Proveri da li je ceo kopiran.';$('mMsg').className='msg';}
   });
 };
 function flash(t){$('hint').textContent=t;$('hint').style.opacity='1';}
+function closeEditors(){
+  ed=null;sed=null;
+  $('edPanel').classList.add('hidden');$('sedPanel').classList.add('hidden');$('solPanel').classList.remove('hidden');
+}
+function editorOpened(){
+  revealed.n=revealed.t=revealed.b=false;updateRevealButtons();
+  $('solPanel').classList.add('hidden');
+  updateHeader();renderList();homeView();
+}
 
-/* ---------- editor ---------- */
+/* ---------- editor: kockice ---------- */
 const N=6;let ed=null,painting=null;
 function eIdx(x,y,z){return x+N*(y+N*z);}
 function openEditor(task){
+  closeEditors();
   ed={a:new Uint8Array(N*N*N),layer:0,editId:task&&!task.builtin?task.id:null};
   if(task){const v=task.vox;for(let z=0;z<Math.min(v.H,N);z++)for(let y=0;y<Math.min(v.D,N);y++)for(let x=0;x<Math.min(v.W,N);x++)if(get(v,x,y,z))ed.a[eIdx(x,y,z)]=1;}
   $('edName').value=task?(task.builtin?task.name+' (kopija)':task.name):'Moj predmet';
   $('edLevel').value=String(task?task.level:1);
   $('edTitle').textContent=ed.editId?'Izmena predmeta':'Novi predmet';
   $('edMsg').textContent='';$('edMsg').className='msg';
-  $('solPanel').classList.add('hidden');$('edPanel').classList.remove('hidden');
-  revealed.n=revealed.t=revealed.b=false;updateRevealButtons();
-  renderEditor();preview();updateHeader();renderList();
-  yaw=HOME.yaw;pitch=HOME.pitch;render();
-}
-function closeEditor(reselect){
-  ed=null;$('edPanel').classList.add('hidden');$('solPanel').classList.remove('hidden');
-  if(reselect)select(cur);
+  $('edPanel').classList.remove('hidden');
+  editorOpened();renderEditor();preview();
 }
 function crop(){
   let mn=[N,N,N],mx=[-1,-1,-1];
@@ -772,7 +1265,7 @@ function crop(){
     if(ed.a[eIdx(x,y,z)])setv(v,x-mn[0],y-mn[1],z-mn[2],1);
   return v;
 }
-function preview(){buildObject(crop());if(!curVox)fitCamera();}
+function preview(){const v=crop();buildObject(v?{kind:'v',W:v.W,D:v.D,H:v.H,vox:v,_views:{}}:null);if(!curGeo)fitCamera();}
 function layerCount(z){let n=0;for(let i=0;i<N*N;i++)n+=ed.a[z*N*N+i];return n;}
 function renderEditor(){
   const L=$('edLayers');L.innerHTML='';
@@ -782,13 +1275,13 @@ function renderEditor(){
     b.innerHTML=(z+1)+'<small>'+layerCount(z)+' kock.</small>';
     b.onclick=()=>{ed.layer=z;renderEditor();};L.appendChild(b);
   }
-  const G=$('edGrid');G.innerHTML='';
+  const G2=$('edGrid');G2.innerHTML='';
   for(let r=0;r<N;r++)for(let x=0;x<N;x++){
     const y=N-1-r,z=ed.layer;
     const c=document.createElement('button');
     c.className='ecell'+(ed.a[eIdx(x,y,z)]?' on':'')+(z>0&&ed.a[eIdx(x,y,z-1)]?' below':'');
     c.dataset.x=x;c.dataset.y=y;c.setAttribute('aria-label','polje '+(x+1)+','+(r+1));
-    G.appendChild(c);
+    G2.appendChild(c);
   }
 }
 function paintCell(el){
@@ -796,7 +1289,6 @@ function paintCell(el){
   const i=eIdx(+el.dataset.x,+el.dataset.y,ed.layer);
   if(ed.a[i]===painting)return;
   ed.a[i]=painting;el.classList.toggle('on',!!painting);
-  // osveži brojač sloja
   const lb=$('edLayers').children[ed.layer];if(lb)lb.querySelector('small').textContent=layerCount(ed.layer)+' kock.';
   preview();
 }
@@ -808,33 +1300,167 @@ $('edGrid').addEventListener('pointermove',e=>{
   if(painting===null||!ed)return;
   const el=document.elementFromPoint(e.clientX,e.clientY);if(el&&el.closest)paintCell(el.closest('.ecell'));
 });
-window.addEventListener('pointerup',()=>{painting=null;});
-window.addEventListener('pointercancel',()=>{painting=null;});
+window.addEventListener('pointerup',()=>{painting=null;sPaint=null;});
+window.addEventListener('pointercancel',()=>{painting=null;sPaint=null;});
 $('edCopyBelow').onclick=()=>{if(!ed||ed.layer===0)return;const z=ed.layer;for(let i=0;i<N*N;i++)ed.a[z*N*N+i]=ed.a[(z-1)*N*N+i];renderEditor();preview();};
 $('edClearLayer').onclick=()=>{if(!ed)return;const z=ed.layer;for(let i=0;i<N*N;i++)ed.a[z*N*N+i]=0;renderEditor();preview();};
 $('edClearAll').onclick=()=>{if(!ed)return;ed.a.fill(0);renderEditor();preview();};
-$('edCancel').onclick=()=>closeEditor(true);
+$('edCancel').onclick=()=>{closeEditors();select(cur);};
 $('edSave').onclick=()=>{
   const v=crop();
   if(!v){$('edMsg').textContent='Dodaj bar jednu kockicu.';$('edMsg').className='msg';return;}
   const name=($('edName').value.trim()||'Moj predmet').slice(0,40);
   const level=+$('edLevel').value||1;
-  let idx;
-  if(ed.editId){const c=custom.find(c=>c.id===ed.editId);if(c){c.name=name;c.level=level;c.vox=v;}}
-  else custom.push({id:'c'+Date.now(),name,level,vox:v,builtin:false});
-  const id=ed.editId||custom[custom.length-1].id;
-  const ok=saveCustom();rebuildTasks();
-  idx=tasks.findIndex(t=>t.id===id);
-  ed=null;$('edPanel').classList.add('hidden');$('solPanel').classList.remove('hidden');
-  select(idx);
+  let id=ed.editId;
+  if(id){const c=custom.v.find(c=>c.id===id);if(c){c.name=name;c.level=level;c.vox=v;delete c._geo;}}
+  else{id='c'+Date.now();custom.v.push({id,kind:'v',name,level,vox:v,builtin:false});}
+  const ok=saveCustom('v');closeEditors();tasks=taskList();
+  select(tasks.findIndex(t=>t.id===id));
   if(!ok)flash('Predmet je dodat, ali ovaj pregledač ne može trajno da ga sačuva – sačuvaj „Kod zadatka“.');
 };
-$('newBtn').onclick=()=>openEditor(null);
-$('editBtn').onclick=()=>openEditor(tasks[cur]);
+
+/* ---------- editor: tela (izometrija) ---------- */
+let sed=null,sPaint=null,sTimer=null;
+const TOOLS=['#','.','1','2','3','4','5','6','7','8'];
+const TOOL_NAMES={'#':'puno polje','.':'prazno polje','1':'kosina','2':'kosina','3':'kosina','4':'kosina','5':'zaobljenje','6':'zaobljenje','7':'zaobljenje','8':'zaobljenje'};
+function shapeSVG(ch){
+  if(ch==='.')return '<svg viewBox="0 0 1 1"><path d="M.25 .25L.75 .75M.75 .25L.25 .75" stroke="#c9bfa9" stroke-width=".08" stroke-linecap="round"/></svg>';
+  const sh=CELL[ch];const d='M'+sh.pts.map(([p,q])=>p.toFixed(3)+' '+(1-q).toFixed(3)).join('L')+'Z';
+  return '<svg viewBox="0 0 1 1"><path d="'+d+'" fill="#f4c96b" stroke="#b08a2e" stroke-width=".04"/></svg>';
+}
+const PDIM={n:['W','H'],t:['W','D'],b:['D','H']};
+const PKEY={n:'f',t:'t',b:'s'};
+const ORIENT={
+  n:'Nacrt – pogled spreda (strelica N). Levo-desno je širina, gore-dole visina.',
+  t:'Tlocrt – pogled odozgo (strelica T). Gornji red je ZADNJA strana, donji red PREDNJA.',
+  b:'Bokocrt – pogled sleva (strelica B). Leva kolona je ZADNJA strana, desna PREDNJA.'
+};
+(function initSed(){
+  for(const id of ['sedW','sedD','sedH']){const s=$(id);for(let i=1;i<=8;i++){const o=document.createElement('option');o.value=i;o.textContent=i;s.appendChild(o);}}
+  const pal=$('sedPal');
+  TOOLS.forEach(ch=>{const b=document.createElement('button');b.dataset.t=ch;b.title=TOOL_NAMES[ch];b.innerHTML=shapeSVG(ch);
+    b.onclick=()=>{if(!sed)return;sed.tool=ch;renderPalette();};pal.appendChild(b);});
+})();
+function renderPalette(){[...$('sedPal').children].forEach(b=>b.classList.toggle('on',sed&&b.dataset.t===sed.tool));}
+function resizeProfiles(){
+  const s=sed.s;
+  // zadržava donji levi ugao (pod) pri promeni veličine
+  const resize=(rows,U,V)=>{const old=rows.slice();const out=[];
+    for(let i=0;i<V;i++){const oi=old.length-V+i;let r=oi>=0&&oi<old.length?old[oi]:'';r=r.slice(0,U);while(r.length<U)r+='#';out.push(r);}
+    return out;};
+  s.f=resize(s.f,s.W,s.H);s.t=resize(s.t,s.W,s.D);s.s=resize(s.s,s.D,s.H);
+}
+function openSolidEditor(task){
+  closeEditors();
+  const base=task?task.sol:normSolid({W:4,D:3,H:3,f:null,t:null,s:null,holes:[]});
+  sed={s:JSON.parse(JSON.stringify(base)),view:'n',tool:'#',editId:task&&!task.builtin?task.id:null};
+  $('sedName').value=task?(task.builtin?task.name+' (kopija)':task.name):'Moj predmet';
+  $('sedLevel').value=String(task?task.level:1);
+  $('sedW').value=sed.s.W;$('sedD').value=sed.s.D;$('sedH').value=sed.s.H;
+  $('sedTitle').textContent=sed.editId?'Izmena predmeta':'Novi predmet';
+  $('sedMsg').textContent='';$('sedMsg').className='msg';
+  $('sedPanel').classList.remove('hidden');
+  editorOpened();renderSed();sPreview(true);
+}
+function renderSed(){
+  const s=sed.s,k=sed.view,[du,dv]=PDIM[k],U=s[du],V=s[dv],rows=s[PKEY[k]];
+  ['n','t','b'].forEach(v=>$('sedV'+v).setAttribute('aria-pressed',v===k?'true':'false'));
+  $('sedOrient').textContent=ORIENT[k];
+  renderPalette();
+  const G2=$('sedGrid');G2.innerHTML='';
+  G2.style.gridTemplateColumns='repeat('+U+',1fr)';
+  G2.style.maxWidth=Math.min(360,U*46)+'px';
+  for(let r=0;r<V;r++)for(let c=0;c<U;c++){
+    const d=document.createElement('div');d.className='pcell';d.dataset.r=r;d.dataset.c=c;d.innerHTML=shapeSVG(rows[r][c]);G2.appendChild(d);
+  }
+  renderHoles();renderCuts();
+}
+function setPCell(el){
+  if(!el||el.dataset.r===undefined||!sed)return;
+  const k=PKEY[sed.view],r=+el.dataset.r,c=+el.dataset.c,row=sed.s[k][r];
+  if(row[c]===sPaint)return;
+  sed.s[k][r]=row.slice(0,c)+sPaint+row.slice(c+1);
+  el.innerHTML=shapeSVG(sPaint);sPreview();
+}
+$('sedGrid').addEventListener('pointerdown',e=>{
+  const el=e.target.closest('.pcell');if(!el||!sed)return;e.preventDefault();
+  const cur=sed.s[PKEY[sed.view]][+el.dataset.r][+el.dataset.c];
+  sPaint=cur===sed.tool?(sed.tool==='#'?'.':'#'):sed.tool;setPCell(el);
+});
+$('sedGrid').addEventListener('pointermove',e=>{
+  if(sPaint===null||!sed)return;
+  const el=document.elementFromPoint(e.clientX,e.clientY);if(el&&el.closest)setPCell(el.closest('.pcell'));
+});
+['n','t','b'].forEach(v=>$('sedV'+v).onclick=()=>{if(!sed)return;sed.view=v;renderSed();});
+['sedW','sedD','sedH'].forEach((id,i)=>$(id).onchange=()=>{if(!sed)return;sed.s['WDH'[i]]=+$(id).value;resizeProfiles();renderSed();sPreview();});
+$('sedFill').onclick=()=>{if(!sed)return;const k=PKEY[sed.view];sed.s[k]=sed.s[k].map(r=>'#'.repeat(r.length));renderSed();sPreview();};
+$('sedEmpty').onclick=()=>{if(!sed)return;const k=PKEY[sed.view];sed.s[k]=sed.s[k].map(r=>'.'.repeat(r.length));renderSed();sPreview();};
+function renderHoles(){
+  const box=$('sedHoles');box.innerHTML='';
+  sed.s.holes.forEach((h,i)=>{
+    const d=document.createElement('div');d.className='hole';
+    d.innerHTML='<select data-k="v"><option value="n">krug u nacrtu</option><option value="t">krug u tlocrtu</option><option value="b">krug u bokocrtu</option></select>'+
+      '<span>centar ↔</span><input data-k="u" type="number" step="0.5">'+
+      '<span>↕</span><input data-k="w" type="number" step="0.5">'+
+      '<span>prečnik</span><input data-k="d" type="number" step="0.5" min="0.5">'+
+      '<span>od</span><input data-k="a" type="number" step="0.5" placeholder="poč.">'+
+      '<span>do</span><input data-k="b" type="number" step="0.5" placeholder="kraj">'+
+      '<button class="btn small danger" data-del="1">✕</button>';
+    d.querySelector('select').value=h.v;
+    d.querySelectorAll('input').forEach(inp=>{inp.value=h[inp.dataset.k]===''?'':h[inp.dataset.k];
+      inp.oninput=()=>{const k=inp.dataset.k,val=inp.value;h[k]=(k==='a'||k==='b')?(val===''?'':+val):(+val||0);sPreview();};});
+    d.querySelector('select').onchange=e=>{h.v=e.target.value;sPreview();};
+    d.querySelector('[data-del]').onclick=()=>{sed.s.holes.splice(i,1);renderHoles();sPreview();};
+    box.appendChild(d);
+  });
+}
+const CUT_SHAPES=[['#','kvadar (pravougaonik)'],['1','kosina ◣'],['2','kosina ◢'],['3','kosina ◥'],['4','kosina ◤'],['5','zaobljenje ◜'],['6','zaobljenje ◝'],['7','zaobljenje ◞'],['8','zaobljenje ◟'],['o','oko valjka (ostavlja valjak)']];
+function renderCuts(){
+  const box=$('sedCuts');box.innerHTML='';
+  sed.s.cuts.forEach((c,i)=>{
+    const d=document.createElement('div');d.className='hole';
+    d.innerHTML='<select data-s="v"><option value="n">u nacrtu</option><option value="t">u tlocrtu</option><option value="b">u bokocrtu</option></select>'+
+      '<select data-s="ch">'+CUT_SHAPES.map(([k,n])=>'<option value="'+k+'">'+n+'</option>').join('')+'</select>'+
+      '<span>↔ od</span><input data-k="u0" type="number" step="0.5"><span>do</span><input data-k="u1" type="number" step="0.5">'+
+      '<span>↕ od</span><input data-k="w0" type="number" step="0.5"><span>do</span><input data-k="w1" type="number" step="0.5">'+
+      '<span>dubina od</span><input data-k="a" type="number" step="0.5" placeholder="poč."><span>do</span><input data-k="b" type="number" step="0.5" placeholder="kraj">'+
+      '<button class="btn small danger" data-del="1">✕</button>';
+    d.querySelectorAll('select').forEach(sel=>{sel.value=c[sel.dataset.s];sel.onchange=()=>{c[sel.dataset.s]=sel.value;sPreview();};});
+    d.querySelectorAll('input').forEach(inp=>{inp.value=c[inp.dataset.k]===''?'':c[inp.dataset.k];
+      inp.oninput=()=>{const k=inp.dataset.k,val=inp.value;c[k]=(k==='a'||k==='b')?(val===''?'':+val):(+val||0);sPreview();};});
+    d.querySelector('[data-del]').onclick=()=>{sed.s.cuts.splice(i,1);renderCuts();sPreview();};
+    box.appendChild(d);
+  });
+}
+$('sedAddCut').onclick=()=>{if(!sed)return;const s=sed.s,[du,dv]=PDIM[sed.view];sed.s.cuts.push({v:sed.view,ch:'#',u0:0,u1:1,w0:s[dv]-1,w1:s[dv],a:'',b:''});renderCuts();sPreview();};
+$('sedAddHole').onclick=()=>{if(!sed)return;const s=sed.s;sed.s.holes.push({v:sed.view,u:s[PDIM[sed.view][0]]/2,w:s[PDIM[sed.view][1]]/2,d:1,a:'',b:''});renderHoles();sPreview();};
+function sPreview(now){
+  clearTimeout(sTimer);
+  const run=()=>{if(!sed)return;try{buildObject(buildSolidGeo(sed.s));$('sedMsg').textContent='';}catch(e){$('sedMsg').textContent='Ovaj oblik ne mogu da izračunam – proveri profile i rupe.';}};
+  if(now)run();else sTimer=setTimeout(run,150);
+}
+$('sedCancel').onclick=()=>{closeEditors();select(cur);};
+$('sedSave').onclick=()=>{
+  let geo;try{geo=buildSolidGeo(sed.s);}catch(e){geo=null;}
+  if(!geo||!geo.tris.length){$('sedMsg').textContent='Telo je prazno – proveri da se profili preklapaju.';$('sedMsg').className='msg';return;}
+  const name=($('sedName').value.trim()||'Moj predmet').slice(0,40);
+  const level=+$('sedLevel').value||1;
+  const sol=normSolid(sed.s);
+  let id=sed.editId;
+  if(id){const c=custom.s.find(c=>c.id===id);if(c){c.name=name;c.level=level;c.sol=sol;delete c._geo;}}
+  else{id='c'+Date.now();custom.s.push({id,kind:'s',name,level,sol,builtin:false});}
+  const ok=saveCustom('s');closeEditors();tasks=taskList();
+  select(tasks.findIndex(t=>t.id===id));
+  if(!ok)flash('Predmet je dodat, ali ovaj pregledač ne može trajno da ga sačuva – sačuvaj „Kod zadatka“.');
+};
+$('newBtn').onclick=()=>tab==='v'?openEditor(null):openSolidEditor(null);
+$('editBtn').onclick=()=>{const t=tasks[cur];t.kind==='s'?openSolidEditor(t):openEditor(t);};
 
 /* ---------- start ---------- */
-select(cur);
-if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(!ed)buildObject(tasks[cur].vox);drawSolution();});
+tasks=taskList();
+select(curIdx[tab]);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(!editing())buildObject(geoOf(tasks[cur]));drawSolution();});
+
 })();
 </script>
 </body>
