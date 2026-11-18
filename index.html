@@ -115,6 +115,12 @@ details ul{padding-left:18px;margin:6px 0}
 .hole{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;font-size:12.5px;font-weight:700;color:var(--muted)}
 .hole input{width:58px;padding:5px 6px;font-size:13px}
 .hole select{padding:5px 6px;font-size:13px}
+#stage.ortho #view3d,#stage.ortho #tb3d,#stage.ortho .v3only{display:none}
+#stage:not(.ortho) #taskWrap{display:none}
+#taskWrap{overflow:auto}
+#taskCv{display:block;border-radius:10px}
+.axblock h3{font-size:14px;margin:14px 0 6px;font-weight:800}
+.axblock canvas{display:block;border-radius:10px}
 .app>*{min-width:0}
 #view3d{width:100%}
 @media (max-width:1100px){
@@ -138,7 +144,7 @@ details ul{padding-left:18px;margin:6px 0}
   <aside class="card side">
     <h1>Ortogonalna projekcija</h1>
     <p class="sub">Izaberi predmet za zadatak</p>
-    <div class="tabs"><button id="tabV" class="on">Kockice</button><button id="tabS">Izometrija</button></div>
+    <div class="tabs"><button id="tabV" class="on">Kockice</button><button id="tabS">Aksonometrija</button></div>
     <div class="list" id="list"></div>
     <div class="sidebtns">
       <button class="btn primary" id="newBtn">＋ Novi predmet</button>
@@ -156,6 +162,12 @@ details ul{padding-left:18px;margin:6px 0}
       <button class="btn small" id="prevBtn" title="Prethodni (←)">←</button>
       <button class="btn small" id="nextBtn" title="Sledeći (→)">→</button>
     </div>
+    <div class="row hidden" id="modeRow" style="margin-bottom:10px">
+      <span class="lbl">Zadatak prikaži kao</span>
+      <button class="btn small" id="modeO" aria-pressed="true">Ortogonalne projekcije</button>
+      <button class="btn small" id="mode3" aria-pressed="false">3D model</button>
+    </div>
+    <div id="taskWrap"><canvas id="taskCv"></canvas></div>
     <div id="view3d">
       <div class="hint" id="hint">Prevuci mišem ili prstom da okreneš predmet</div>
     </div>
@@ -165,7 +177,7 @@ details ul{padding-left:18px;margin:6px 0}
       <span><span class="dot" style="background:var(--B)">B</span>bokocrt – pogled sleva</span>
     </div>
     <div class="toolbar">
-      <div class="row">
+      <div class="row" id="tb3d">
         <button class="btn small" id="rotL" title="Okreni levo">⟲ 90°</button>
         <button class="btn small" id="rotR" title="Okreni desno">⟳ 90°</button>
         <button class="btn small" id="isoBtn">Početni položaj</button>
@@ -175,10 +187,10 @@ details ul{padding-left:18px;margin:6px 0}
         <button class="btn small" id="fsBtn">⛶ Ceo ekran</button>
       </div>
       <div class="row" id="taskActions">
-        <span class="lbl">Okreni kao</span>
-        <button class="btn small" id="snapN">spreda</button>
-        <button class="btn small" id="snapT">odozgo</button>
-        <button class="btn small" id="snapB">sleva</button>
+        <span class="lbl v3only">Okreni kao</span>
+        <button class="btn small v3only" id="snapN">spreda</button>
+        <button class="btn small v3only" id="snapT">odozgo</button>
+        <button class="btn small v3only" id="snapB">sleva</button>
         <span class="spacer"></span>
         <button class="btn small" id="editBtn">✎ Izmeni</button>
         <button class="btn small" id="shareBtn">Kod zadatka</button>
@@ -215,8 +227,38 @@ details ul{padding-left:18px;margin:6px 0}
         <li>Izaberi predmet levo i prikaži ga deci (dugme „Ceo ekran“ je zgodno za projektor).</li>
         <li>Deca na kvadratićima crtaju nacrt, tlocrt i bokocrt, gledajući u pravcu strelica N, T i B.</li>
         <li>Rešenje otkrivaj pogled po pogled ili sve odjednom.</li>
-        <li>Tab „Izometrija“ ima tela sa kosinama, zaobljenjima i rupama. Isprekidano tanje (crta-tačka) su ose rupa.</li>
-        <li>„Novi predmet“ otvara graditelj: u tabu Kockice slažeš kockice sloj po sloj, a u tabu Izometrija crtaš tri profila (nacrt, tlocrt, bokocrt) i dodaješ rupe. Sačuvani predmeti ostaju u ovom pregledaču; dugme „Kod zadatka“ daje kod da ga preneseš na drugi računar.</li>
+        <li>Tab „Aksonometrija“ služi za crtanje predmeta u kosoj projekciji, dimetriji i izometriji.</li>
+        <li>„Novi predmet“ otvara graditelj: u tabu Kockice slažeš kockice sloj po sloj, a u tabu Aksonometrija crtaš tri profila (nacrt, tlocrt, bokocrt) i dodaješ rupe. Sačuvani predmeti ostaju u ovom pregledaču; dugme „Kod zadatka“ daje kod da ga preneseš na drugi računar.</li>
+      </ul>
+    </details>
+  </section>
+
+  <!-- Axonometry solution panel -->
+  <section class="card hidden" id="axPanel">
+    <div class="solhead">
+      <h2>Rešenje – aksonometrija</h2>
+      <span class="spacer"></span>
+      <button class="btn small" id="axShowAll">Prikaži sve</button>
+      <button class="btn small" id="axHideAll">Sakrij</button>
+    </div>
+    <div class="row">
+      <button class="btn" id="axK" aria-pressed="false">Kosa projekcija</button>
+      <button class="btn" id="axD" aria-pressed="false">Dimetrija</button>
+      <button class="btn" id="axI" aria-pressed="false">Izometrija</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <label class="chk"><input type="checkbox" id="axHidden"> Nevidljive ivice</label>
+      <label class="chk"><input type="checkbox" id="axGrid" checked> Mreža</label>
+      <label class="chk"><input type="checkbox" id="axAxes" checked> Ose x, y, z</label>
+    </div>
+    <div id="axWrap"></div>
+    <p class="note"><b>Kosa projekcija:</b> x i z bez skraćenja, osa y pod 45° skraćena na polovinu (1:2). <b>Dimetrija:</b> osa x pod 7° bez skraćenja, osa y pod 42° skraćena na polovinu, z uspravno. <b>Izometrija:</b> ose x i y pod 30°, sve tri bez skraćenja. Jedan kvadratić (jedinica mreže) je jedna jedinica mere predmeta. <b>Razmak</b> prikazuje/sakriva rešenje, <b>← →</b> menjaju zadatak.</p>
+    <details>
+      <summary>Kako se koristi</summary>
+      <ul>
+        <li>Deca dobiju predmet zadat ortogonalnim projekcijama (nacrt, tlocrt, bokocrt) ili kao 3D model i crtaju ga u kosoj projekciji, dimetriji ili izometriji.</li>
+        <li>Rešenje otkrivaš za svaki način posebno.</li>
+        <li>„Novi predmet“ otvara graditelj: crtaš tri profila, dodaješ rupe i izreze.</li>
       </ul>
     </details>
   </section>
@@ -824,7 +866,7 @@ function geoOf(t){
 /* ---------- 3D ---------- */
 const view=$('view3d');
 let renderer,scene,camera,root,content,arrows,cubeLines;
-const HOME={v:{yaw:0.66,pitch:0.5},s:{yaw:Math.PI/4,pitch:Math.atan(1/Math.SQRT2)}};
+const HOME={v:{yaw:0.66,pitch:0.5},s:{yaw:-Math.PI/4,pitch:Math.atan(1/Math.SQRT2)}};
 let yaw=0.66,pitch=0.5,target=null,curGeo=null;
 const has3D=typeof THREE!=='undefined';
 
@@ -1011,8 +1053,8 @@ function viewOf(geo,k){
 }
 function rrect(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
 const rd=x=>Math.round(x*1000)/1000;
-function drawSolution(){
-  const cv=$('sol'),g=cv.getContext('2d'),geo=curGeo,wrap=$('solWrap');
+function drawOrthoTo(cv,wrap,geo,rev,o){
+  const g=cv.getContext('2d');
   if(!geo){cv.width=cv.height=0;return;}
   const W=geo.W,D=geo.D,H=geo.H;
   const cols=1+W+2+D+1,rows=2+H+2+D+1;
@@ -1024,7 +1066,7 @@ function drawSolution(){
   cv.width=cols*c*dpr;cv.height=rows*c*dpr;cv.style.width=cols*c+'px';cv.style.height=rows*c+'px';
   g.setTransform(dpr,0,0,dpr,0,0);
   g.fillStyle='#fffdf8';g.fillRect(0,0,cols*c,rows*c);
-  if($('optGrid').checked){
+  if(o.grid){
     g.strokeStyle='#e9e3d5';g.lineWidth=1;g.beginPath();
     for(let i=0;i<=cols;i++){g.moveTo(i*c+.5,0);g.lineTo(i*c+.5,rows*c);}
     for(let j=0;j<=rows;j++){g.moveTo(0,j*c+.5);g.lineTo(cols*c,j*c+.5);}
@@ -1032,7 +1074,7 @@ function drawSolution(){
   }
   // koordinatne ose (u sredini razmaka između pogleda)
   const ax=(1+W+1)*c, ay=(2+H+1)*c, cwid=cols*c, chei=rows*c;
-  if($('optAxes').checked){
+  if(o.axes){
     g.strokeStyle='#4b5563';g.lineWidth=1.6;g.setLineDash([]);g.lineCap='butt';
     g.beginPath();g.moveTo(c*0.3,ay);g.lineTo(cwid-c*0.3,ay);g.moveTo(ax,c*0.3);g.lineTo(ax,chei-c*0.3);g.stroke();
     g.fillStyle='#374151';g.font='italic 800 '+Math.round(Math.max(12,c*0.5))+'px Nunito, Arial, sans-serif';
@@ -1045,8 +1087,8 @@ function drawSolution(){
   const VW={n:viewOf(geo,'n'),t:viewOf(geo,'t'),b:viewOf(geo,'b')};
   const OR={n:[1,2],b:[1+W+2,2],t:[1,2+H+2]};
   const PX=(k,u,q)=>[(OR[k][0]+u)*c,(OR[k][1]+VW[k].V-q)*c];
-  const showH=$('optHidden').checked;
-  if($('optSpone').checked){
+  const showH=o.hidden;
+  if(o.spone){
     const segsOf=k=>showH?VW[k].vis.concat(VW[k].hid):VW[k].vis;
     const posOf=k=>{
       const us=new Set(),vs=new Set();
@@ -1066,16 +1108,16 @@ function drawSolution(){
       for(const u of us)if(best===null||(right?u>best:u<best))best=u;}return best;};
     g.lineWidth=1.3;g.setLineDash([5,4]);g.lineCap='butt';
     const line=(col,a,b)=>{g.strokeStyle=col;g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke();};
-    if(revealed.n){const P=posOf('n');
+    if(rev.n){const P=posOf('n');
       for(const u of P.us){const q=hitU('n',u,true);if(q===null)continue;const p=PX('n',u,q);line(COLORS.n,p,[p[0],ay]);}
       for(const q of P.vs){const u=hitV('n',q,true);if(u===null)continue;const p=PX('n',u,q);line(COLORS.n,p,[ax,p[1]]);}
     }
-    if(revealed.t){const P=posOf('t');
+    if(rev.t){const P=posOf('t');
       for(const u of P.us){const q=hitU('t',u,false);if(q===null)continue;const p=PX('t',u,q);line(COLORS.t,p,[p[0],ay]);}
       for(const q of P.vs){const u=hitV('t',q,true);if(u===null)continue;const p=PX('t',u,q),r=p[1]-ay;if(r<=0)continue;
         g.strokeStyle=COLORS.t;g.beginPath();g.moveTo(p[0],p[1]);g.lineTo(ax,p[1]);g.arc(ax,ay,r,Math.PI/2,0,true);g.stroke();}
     }
-    if(revealed.b){const P=posOf('b');
+    if(rev.b){const P=posOf('b');
       for(const u of P.us){const q=hitU('b',u,true);if(q===null)continue;const p=PX('b',u,q);line(COLORS.b,p,[p[0],ay]);}
       for(const q of P.vs){const u=hitV('b',q,false);if(u===null)continue;const p=PX('b',u,q);line(COLORS.b,p,[ax,p[1]]);}
     }
@@ -1090,7 +1132,7 @@ function drawSolution(){
     g.fillStyle=col;g.beginPath();g.arc(ox+r,oy-r-5,r,0,Math.PI*2);g.fill();
     g.fillStyle='#fff';g.font='900 '+Math.round(r*1.2)+'px Nunito, Arial, sans-serif';g.textAlign='center';g.textBaseline='middle';
     g.fillText(letters[k],ox+r,oy-r-4);
-    if(!revealed[k]){
+    if(!rev[k]){
       g.fillStyle=col+'12';g.strokeStyle=col+'66';g.lineWidth=1.5;g.setLineDash([6,5]);
       rrect(g,ox+2,oy+2,wpx-4,hpx-4,Math.min(10,c*0.3));g.fill();g.stroke();g.setLineDash([]);
       g.fillStyle=col+'aa';g.font='900 '+Math.round(Math.min(wpx,hpx)*0.55)+'px Nunito, Arial, sans-serif';
@@ -1098,7 +1140,7 @@ function drawSolution(){
       continue;
     }
     const P=(u,q)=>[ox+u*c,oy+(vd.V-q)*c];
-    if($('optFill').checked&&vd.dep){
+    if(o.fill&&vd.dep){
       g.fillStyle=col+'1f';
       for(let u=0;u<vd.U;u++)for(let q=0;q<vd.V;q++)if(vd.dep[u+q*vd.U]>=0){const p=P(u,q+1);g.fillRect(p[0],p[1],c,c);}
     }
@@ -1117,6 +1159,111 @@ function drawSolution(){
     g.beginPath();for(const s of vd.vis){const a=P(s[0],s[1]),b=P(s[2],s[3]);g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);}g.stroke();
   }
 }
+function drawSolution(){
+  if(tab==='s'){if(!editing()){drawTask();drawAxo();}return;}
+  drawOrthoTo($('sol'),$('solWrap'),curGeo,revealed,{grid:$('optGrid').checked,axes:$('optAxes').checked,hidden:$('optHidden').checked,spone:$('optSpone').checked,fill:$('optFill').checked});
+}
+let taskMode='o';
+try{if(localStorage.getItem('orto-mode')==='3')taskMode='3';}catch(e){}
+function drawTask(){
+  if(tab!=='s'||taskMode!=='o'||!curGeo)return;
+  drawOrthoTo($('taskCv'),$('taskWrap'),curGeo,{n:true,t:true,b:true},{grid:true,axes:true,hidden:true,spone:false,fill:false});
+}
+/* ---------- aksonometrija ---------- */
+const AXO_KEYS=['k','d','i'],AXO_NAMES={k:'Kosa projekcija',d:'Dimetrija',i:'Izometrija'};
+const axRev={k:false,d:false,i:false};
+function axoParams(key){
+  const r=Math.PI/180;
+  if(key==='k')return {ex:[1,0],ey:[0.5*Math.cos(45*r),0.5*Math.sin(45*r)],ez:[0,1],grid:'sq'};
+  if(key==='d')return {ex:[Math.cos(7*r),-Math.sin(7*r)],ey:[0.5*Math.cos(42*r),0.5*Math.sin(42*r)],ez:[0,1],grid:'sq'};
+  return {ex:[Math.cos(30*r),-Math.sin(30*r)],ey:[Math.cos(30*r),Math.sin(30*r)],ez:[0,1],grid:'iso'};
+}
+function axoView(geo,key){
+  geo._axo=geo._axo||{};if(geo._axo[key])return geo._axo[key];
+  const P=axoParams(key),{ex,ey,ez}=P,W=geo.W,D=geo.D,H=geo.H;
+  const dx=-ey[0]/ex[0],dz=-(dx*ex[1]+ey[1]),d=[dx,1,dz],dl=Math.hypot(d[0],d[1],d[2]),dir=d.map(x=>x/dl);
+  const pr=p=>[p[0]*ex[0]+p[1]*ey[0]+p[2]*ez[0],p[0]*ex[1]+p[1]*ey[1]+p[2]*ez[1],p[0]*d[0]+p[1]*d[1]+p[2]*d[2]];
+  let X0=Infinity,Y0=Infinity,X1=-Infinity,Y1=-Infinity;
+  for(const x of [0,W])for(const y of [0,D])for(const z of [0,H]){const q=pr([x,y,z]);X0=Math.min(X0,q[0]);X1=Math.max(X1,q[0]);Y0=Math.min(Y0,q[1]);Y1=Math.max(Y1,q[1]);}
+  const L=lineView(geo,pr,dir,X0-1,Y0-1,X1+1,Y1+1);
+  return geo._axo[key]=Object.assign({},P,{vis:L.vis,hid:L.hid,pr});
+}
+function drawAxoTo(cv,wrap,geo,key,shown){
+  const g=cv.getContext('2d'),av=axoView(geo,key),{ex,ey,ez}=av,W=geo.W,D=geo.D,H=geo.H;
+  const E=1.3,axEnd={x:av.pr([W+E,0,0]),y:av.pr([0,D+E/ (key==='i'?1:0.5),0]),z:av.pr([0,0,H+E])};
+  let X0=0,Y0=0,X1=0,Y1=0;
+  const pts=[[0,0]];for(const x of [0,W])for(const y of [0,D])for(const z of [0,H])pts.push(av.pr([x,y,z]));
+  pts.push(axEnd.x,axEnd.y,axEnd.z);
+  for(const q of pts){X0=Math.min(X0,q[0]);X1=Math.max(X1,q[0]);Y0=Math.min(Y0,q[1]);Y1=Math.max(Y1,q[1]);}
+  const m=0.8,spanU=X1-X0+2*m,spanV=Y1-Y0+2*m;
+  let c=Math.floor((wrap.clientWidth||400)/spanU);c=Math.max(14,Math.min(44,c));
+  const wpx=Math.ceil(spanU*c),hpx=Math.ceil(spanV*c),dpr=Math.min(window.devicePixelRatio||1,2);
+  cv.width=wpx*dpr;cv.height=hpx*dpr;cv.style.width=wpx+'px';cv.style.height=hpx+'px';
+  g.setTransform(dpr,0,0,dpr,0,0);g.fillStyle='#fffdf8';g.fillRect(0,0,wpx,hpx);
+  const X=u=>(u-X0+m)*c,Y=v=>(Y1+m-v)*c,ox=X(0),oy=Y(0);
+  if($('axGrid').checked){
+    g.strokeStyle='#e9e3d5';g.lineWidth=1;g.beginPath();
+    if(av.grid==='sq'){
+      for(let x=ox%c;x<=wpx;x+=c){g.moveTo(Math.round(x)+.5,0);g.lineTo(Math.round(x)+.5,hpx);}
+      for(let y=oy%c;y<=hpx;y+=c){g.moveTo(0,Math.round(y)+.5);g.lineTo(wpx,Math.round(y)+.5);}
+    } else {
+      const s3=Math.cos(Math.PI/6)*c;
+      for(let x=ox%s3;x<=wpx;x+=s3){g.moveTo(x,0);g.lineTo(x,hpx);}
+      const t=Math.tan(Math.PI/6),L=wpx+hpx;
+      for(let k=-60;k<=60;k++){const y0=oy+k*c;g.moveTo(0,y0-ox*t);g.lineTo(wpx,y0+(wpx-ox)*t);g.moveTo(0,y0+ox*t);g.lineTo(wpx,y0-(wpx-ox)*t);}
+    }
+    g.stroke();
+  }
+  if($('axAxes').checked){
+    g.strokeStyle='#6b7280';g.lineWidth=1.4;g.setLineDash([]);
+    g.fillStyle='#374151';g.font='italic 800 '+Math.round(Math.max(12,c*0.5))+'px Nunito, Arial, sans-serif';g.textAlign='center';g.textBaseline='middle';
+    for(const k of ['x','y','z']){const e=axEnd[k],ux=X(e[0]),uy=Y(e[1]);
+      g.beginPath();g.moveTo(ox,oy);g.lineTo(ux,uy);g.stroke();
+      const dx=ux-ox,dy=uy-oy,l=Math.hypot(dx,dy)||1,nx=dx/l,ny=dy/l,a=Math.max(6,c*0.22);
+      g.beginPath();g.moveTo(ux,uy);g.lineTo(ux-nx*a-ny*a*0.45,uy-ny*a+nx*a*0.45);g.lineTo(ux-nx*a+ny*a*0.45,uy-ny*a-nx*a*0.45);g.closePath();g.fill();
+      g.save();g.lineWidth=4;g.strokeStyle='#fffdf8';g.lineJoin='round';g.strokeText(k,ux+nx*c*0.45,uy+ny*c*0.45);g.restore();g.fillText(k,ux+nx*c*0.45,uy+ny*c*0.45);}
+    g.beginPath();g.arc(ox,oy,2.5,0,Math.PI*2);g.fill();
+  }
+  if(!shown){
+    g.fillStyle='rgba(91,75,214,.55)';g.font='900 '+Math.round(Math.min(wpx,hpx)*0.3)+'px Nunito, Arial, sans-serif';g.textAlign='center';g.textBaseline='middle';
+    g.fillText('?',wpx/2,hpx/2);return;
+  }
+  g.strokeStyle='#1f2933';
+  if($('axHidden').checked&&av.hid.length){
+    g.lineWidth=Math.max(1.4,c*0.05);g.lineCap='butt';g.setLineDash([Math.max(4,c*0.24),Math.max(3,c*0.15)]);
+    g.beginPath();for(const s of av.hid){g.moveTo(X(s[0]),Y(s[1]));g.lineTo(X(s[2]),Y(s[3]));}g.stroke();g.setLineDash([]);
+  }
+  g.lineWidth=Math.max(2.2,c*0.09);g.lineCap='round';g.lineJoin='round';
+  g.beginPath();for(const s of av.vis){g.moveTo(X(s[0]),Y(s[1]));g.lineTo(X(s[2]),Y(s[3]));}g.stroke();
+}
+function drawAxo(){
+  const wrap=$('axWrap');if(tab!=='s'||!curGeo||curGeo.kind!=='s')return;
+  if(!wrap.children.length){
+    for(const k of AXO_KEYS){const d=document.createElement('div');d.className='axblock';d.innerHTML='<h3>'+AXO_NAMES[k]+'</h3><canvas id="axCv'+k+'"></canvas>';wrap.appendChild(d);}
+  }
+  for(const k of AXO_KEYS)drawAxoTo($('axCv'+k),wrap,curGeo,k,axRev[k]);
+}
+function updateAxButtons(){for(const k of AXO_KEYS)$('ax'+k.toUpperCase()).setAttribute('aria-pressed',axRev[k]?'true':'false');}
+function setAxAll(v){for(const k of AXO_KEYS)axRev[k]=v;updateAxButtons();drawAxo();}
+for(const k of AXO_KEYS)$('ax'+k.toUpperCase()).onclick=()=>{axRev[k]=!axRev[k];updateAxButtons();drawAxo();};
+$('axShowAll').onclick=()=>setAxAll(true);
+$('axHideAll').onclick=()=>setAxAll(false);
+['axHidden','axGrid','axAxes'].forEach(id=>$(id).onchange=drawAxo);
+new ResizeObserver(()=>{if(tab==='s')drawSolution();}).observe($('axWrap'));
+new ResizeObserver(()=>{if(tab==='s')drawTask();}).observe($('taskWrap'));
+function updatePanels(){
+  const e=editing(),s=tab==='s';
+  $('solPanel').classList.toggle('hidden',e||s);
+  $('axPanel').classList.toggle('hidden',e||!s);
+  $('modeRow').classList.toggle('hidden',e||!s);
+  const ortho=s&&!e&&taskMode==='o';
+  $('stage').classList.toggle('ortho',ortho);
+  $('modeO').setAttribute('aria-pressed',taskMode==='o'?'true':'false');$('mode3').setAttribute('aria-pressed',taskMode==='3'?'true':'false');
+  if(!ortho)setTimeout(fitCamera,0);
+}
+function setMode(m){taskMode=m;try{localStorage.setItem('orto-mode',m);}catch(e){}updatePanels();drawSolution();}
+$('modeO').onclick=()=>setMode('o');
+$('mode3').onclick=()=>setMode('3');
 function updateRevealButtons(){
   [['n','revN'],['t','revT'],['b','revB']].forEach(([k,id])=>$(id).setAttribute('aria-pressed',revealed[k]?'true':'false'));
 }
@@ -1143,6 +1290,7 @@ function renderList(){
   });
 }
 function updateHeader(){
+  updatePanels();
   $('optCubesL').classList.toggle('hidden',tab!=='v');
   $('optFillL').classList.toggle('hidden',tab!=='v');
   $('tabV').classList.toggle('on',tab==='v');$('tabS').classList.toggle('on',tab==='s');
@@ -1168,6 +1316,7 @@ function select(i){
   curIdx[tab]=cur;
   try{localStorage.setItem(tab==='v'?'orto-cur':'orto-cur-s',String(cur));}catch(e){}
   revealed.n=revealed.t=revealed.b=false;updateRevealButtons();
+  for(const k of AXO_KEYS)axRev[k]=false;updateAxButtons();
   buildObject(geoOf(tasks[cur]));
   homeView();
   updateHeader();renderList();drawSolution();
@@ -1188,7 +1337,7 @@ document.addEventListener('keydown',e=>{
   if(editing())return;
   if(e.key==='ArrowRight'){$('nextBtn').click();e.preventDefault();}
   else if(e.key==='ArrowLeft'){$('prevBtn').click();e.preventDefault();}
-  else if(e.key===' '){setReveal(!(revealed.n&&revealed.t&&revealed.b));e.preventDefault();}
+  else if(e.key===' '){if(tab==='s')setAxAll(!AXO_KEYS.every(k=>axRev[k]));else setReveal(!(revealed.n&&revealed.t&&revealed.b));e.preventDefault();}
 });
 let delArmed=false,delTimer=null;
 $('delBtn').onclick=()=>{
@@ -1218,7 +1367,7 @@ $('shareBtn').onclick=()=>{
   });
 };
 $('importBtn').onclick=()=>{
-  openModal('Učitaj kod zadatka','Nalepi kod koji počinje sa OP1| (kockice) ili OP2| (izometrija).','','Učitaj',()=>{
+  openModal('Učitaj kod zadatka','Nalepi kod koji počinje sa OP1| (kockice) ili OP2| (aksonometrija).','','Učitaj',()=>{
     try{
       const d=decodeAny($('mArea').value);
       const t=Object.assign(d,{id:'c'+Date.now(),builtin:false});
@@ -1232,11 +1381,10 @@ $('importBtn').onclick=()=>{
 function flash(t){$('hint').textContent=t;$('hint').style.opacity='1';}
 function closeEditors(){
   ed=null;sed=null;
-  $('edPanel').classList.add('hidden');$('sedPanel').classList.add('hidden');$('solPanel').classList.remove('hidden');
+  $('edPanel').classList.add('hidden');$('sedPanel').classList.add('hidden');
 }
 function editorOpened(){
   revealed.n=revealed.t=revealed.b=false;updateRevealButtons();
-  $('solPanel').classList.add('hidden');
   updateHeader();renderList();homeView();
 }
 
