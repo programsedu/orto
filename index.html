@@ -249,7 +249,7 @@ details ul{padding-left:18px;margin:6px 0}
     <div class="row" style="margin-top:10px">
       <label class="chk"><input type="checkbox" id="axHidden"> Nevidljive ivice</label>
       <label class="chk"><input type="checkbox" id="axGrid" checked> Mreža</label>
-      <label class="chk"><input type="checkbox" id="axAxes" checked> Ose x, y, z</label>
+      <label class="chk"><input type="checkbox" id="axAxes" checked> Pomoćne linije i uglovi</label>
     </div>
     <div id="axWrap"></div>
     <p class="note"><b>Kosa projekcija:</b> x i z bez skraćenja, osa y pod 45° skraćena na polovinu (1:2). <b>Dimetrija:</b> osa x pod 7° bez skraćenja, osa y pod 42° skraćena na polovinu, z uspravno. <b>Izometrija:</b> ose x i y pod 30°, sve tri bez skraćenja. Jedan kvadratić (jedinica mreže) je jedna jedinica mere predmeta. <b>Razmak</b> prikazuje/sakriva rešenje, <b>← →</b> menjaju zadatak.</p>
@@ -1190,17 +1190,23 @@ function axoView(geo,key){
 }
 function drawAxoTo(cv,wrap,geo,key,shown){
   const g=cv.getContext('2d'),av=axoView(geo,key),{ex,ey,ez}=av,W=geo.W,D=geo.D,H=geo.H;
-  const E=1.3,axEnd={x:av.pr([W+E,0,0]),y:av.pr([0,D+E/ (key==='i'?1:0.5),0]),z:av.pr([0,0,H+E])};
+  // pomoćne linije iz prednjeg donjeg ugla (kao u udžbeniku)
+  const C=av.pr([W,0,0]),unit=v=>{const l=Math.hypot(v[0],v[1]);return [v[0]/l,v[1]/l];};
+  const deg={k:[45,0],d:[42,7],i:[30,30]}[key];
+  const guides=[{d:unit(ey),len:Math.hypot(ey[0],ey[1])*D+2.2,deg:deg[0],right:true}];
+  if(deg[1])guides.push({d:unit([-ex[0],-ex[1]]),len:Math.hypot(ex[0],ex[1])*W+2.2,deg:deg[1],right:false});
   let X0=0,Y0=0,X1=0,Y1=0;
   const pts=[[0,0]];for(const x of [0,W])for(const y of [0,D])for(const z of [0,H])pts.push(av.pr([x,y,z]));
-  pts.push(axEnd.x,axEnd.y,axEnd.z);
+  for(const gd of guides){pts.push([C[0]+gd.d[0]*gd.len,C[1]+gd.d[1]*gd.len]);
+    const t=gd.deg*Math.PI/180/2,sx=gd.right?1:-1;pts.push([C[0]+sx*(gd.len+1.2)*Math.cos(t),C[1]+(gd.len+1.2)*Math.sin(t)]);}
+  pts.push([C[0]-1.2,C[1]-0.6],[C[0]+1.2,C[1]-0.6]);
   for(const q of pts){X0=Math.min(X0,q[0]);X1=Math.max(X1,q[0]);Y0=Math.min(Y0,q[1]);Y1=Math.max(Y1,q[1]);}
   const m=0.8,spanU=X1-X0+2*m,spanV=Y1-Y0+2*m;
   let c=Math.floor((wrap.clientWidth||400)/spanU);c=Math.max(14,Math.min(44,c));
   const wpx=Math.ceil(spanU*c),hpx=Math.ceil(spanV*c),dpr=Math.min(window.devicePixelRatio||1,2);
   cv.width=wpx*dpr;cv.height=hpx*dpr;cv.style.width=wpx+'px';cv.style.height=hpx+'px';
   g.setTransform(dpr,0,0,dpr,0,0);g.fillStyle='#fffdf8';g.fillRect(0,0,wpx,hpx);
-  const X=u=>(u-X0+m)*c,Y=v=>(Y1+m-v)*c,ox=X(0),oy=Y(0);
+  const X=u=>(u-X0+m)*c,Y=v=>(Y1+m-v)*c,ox=X(0),oy=Y(0),cx=X(C[0]),cy=Y(C[1]);
   if($('axGrid').checked){
     g.strokeStyle='#e9e3d5';g.lineWidth=1;g.beginPath();
     if(av.grid==='sq'){
@@ -1215,14 +1221,22 @@ function drawAxoTo(cv,wrap,geo,key,shown){
     g.stroke();
   }
   if($('axAxes').checked){
-    g.strokeStyle='#6b7280';g.lineWidth=1.4;g.setLineDash([]);
-    g.fillStyle='#374151';g.font='italic 800 '+Math.round(Math.max(12,c*0.5))+'px Nunito, Arial, sans-serif';g.textAlign='center';g.textBaseline='middle';
-    for(const k of ['x','y','z']){const e=axEnd[k],ux=X(e[0]),uy=Y(e[1]);
-      g.beginPath();g.moveTo(ox,oy);g.lineTo(ux,uy);g.stroke();
-      const dx=ux-ox,dy=uy-oy,l=Math.hypot(dx,dy)||1,nx=dx/l,ny=dy/l,a=Math.max(6,c*0.22);
-      g.beginPath();g.moveTo(ux,uy);g.lineTo(ux-nx*a-ny*a*0.45,uy-ny*a+nx*a*0.45);g.lineTo(ux-nx*a+ny*a*0.45,uy-ny*a-nx*a*0.45);g.closePath();g.fill();
-      g.save();g.lineWidth=4;g.strokeStyle='#fffdf8';g.lineJoin='round';g.strokeText(k,ux+nx*c*0.45,uy+ny*c*0.45);g.restore();g.fillText(k,ux+nx*c*0.45,uy+ny*c*0.45);}
-    g.beginPath();g.arc(ox,oy,2.5,0,Math.PI*2);g.fill();
+    g.strokeStyle='#4b5563';g.fillStyle='#374151';g.lineWidth=1.2;g.setLineDash([]);
+    g.beginPath();g.moveTo(0,cy);g.lineTo(wpx,cy);g.stroke();
+    g.font='700 '+Math.round(Math.max(12,c*0.42))+'px Nunito, Arial, sans-serif';g.textAlign='center';g.textBaseline='middle';
+    for(const gd of guides){
+      const ex2=cx+gd.d[0]*gd.len*c,ey2=cy-gd.d[1]*gd.len*c;
+      g.beginPath();g.moveTo(cx,cy);g.lineTo(ex2,ey2);g.stroke();
+      const R=(gd.len-0.5)*c,t=gd.deg*Math.PI/180;
+      const a0=gd.right?-t:Math.PI,a1=gd.right?0:Math.PI+t;
+      g.beginPath();g.arc(cx,cy,R,a0,a1);g.stroke();
+      const arrow=(ang,dirSign)=>{const px=cx+R*Math.cos(ang),py=cy+R*Math.sin(ang),tx=-Math.sin(ang)*dirSign,ty=Math.cos(ang)*dirSign,s2=Math.max(5,c*0.18);
+        g.beginPath();g.moveTo(px,py);g.lineTo(px-tx*s2+Math.cos(ang)*s2*0.4,py-ty*s2+Math.sin(ang)*s2*0.4);g.lineTo(px-tx*s2-Math.cos(ang)*s2*0.4,py-ty*s2-Math.sin(ang)*s2*0.4);g.closePath();g.fill();};
+      arrow(a0,-1);arrow(a1,1);
+      const am=(a0+a1)/2,lr=R+Math.max(14,c*0.55);
+      const lx=cx+lr*Math.cos(am),ly=cy+lr*Math.sin(am);
+      g.save();g.lineWidth=4;g.strokeStyle='#fffdf8';g.strokeText(gd.deg+'°',lx,ly);g.restore();g.fillText(gd.deg+'°',lx,ly);
+    }
   }
   if(!shown){
     g.fillStyle='rgba(91,75,214,.55)';g.font='900 '+Math.round(Math.min(wpx,hpx)*0.3)+'px Nunito, Arial, sans-serif';g.textAlign='center';g.textBaseline='middle';
