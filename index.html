@@ -1255,7 +1255,10 @@ function drawAxo(){
   if(!wrap.children.length){
     for(const k of AXO_KEYS){const d=document.createElement('div');d.className='axblock';d.innerHTML='<h3>'+AXO_NAMES[k]+'</h3><canvas id="axCv'+k+'"></canvas>';wrap.appendChild(d);}
   }
-  for(const k of AXO_KEYS)drawAxoTo($('axCv'+k),wrap,curGeo,k,axRev[k]);
+  let any=false;
+  for(const k of AXO_KEYS){const blk=$('axCv'+k).parentNode;blk.style.display=axRev[k]?'':'none';if(axRev[k]){any=true;drawAxoTo($('axCv'+k),wrap,curGeo,k,true);}}
+  let h=$('axNone');if(!h){h=document.createElement('p');h.id='axNone';h.className='note';h.textContent='Klikni na kosu projekciju, dimetriju ili izometriju da se prikaže rešenje.';wrap.appendChild(h);}
+  h.style.display=any?'none':'';
 }
 function updateAxButtons(){for(const k of AXO_KEYS)$('ax'+k.toUpperCase()).setAttribute('aria-pressed',axRev[k]?'true':'false');}
 function setAxAll(v){for(const k of AXO_KEYS)axRev[k]=v;updateAxButtons();drawAxo();}
