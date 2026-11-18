@@ -256,7 +256,7 @@ details ul{padding-left:18px;margin:6px 0}
     <details>
       <summary>Kako se koristi</summary>
       <ul>
-        <li>Deca dobiju predmet zadat ortogonalnim projekcijama (nacrt, tlocrt, bokocrt) ili kao 3D model i crtaju ga u kosoj projekciji, dimetriji ili izometriji.</li>
+        <li>Deca vide predmet kao 3D model (mogu da ga okreću) i crtaju ga u kosoj projekciji, dimetriji ili izometriji.</li>
         <li>Rešenje otkrivaš za svaki način posebno.</li>
         <li>„Novi predmet“ otvara graditelj: crtaš tri profila, dodaješ rupe i izreze.</li>
       </ul>
@@ -1163,8 +1163,7 @@ function drawSolution(){
   if(tab==='s'){if(!editing()){drawTask();drawAxo();}return;}
   drawOrthoTo($('sol'),$('solWrap'),curGeo,revealed,{grid:$('optGrid').checked,axes:$('optAxes').checked,hidden:$('optHidden').checked,spone:$('optSpone').checked,fill:$('optFill').checked});
 }
-let taskMode='o';
-try{if(localStorage.getItem('orto-mode')==='3')taskMode='3';}catch(e){}
+let taskMode='3';
 function drawTask(){
   if(tab!=='s'||taskMode!=='o'||!curGeo)return;
   drawOrthoTo($('taskCv'),$('taskWrap'),curGeo,{n:true,t:true,b:true},{grid:true,axes:true,hidden:true,spone:false,fill:false});
@@ -1272,7 +1271,7 @@ function updatePanels(){
   const e=editing(),s=tab==='s';
   $('solPanel').classList.toggle('hidden',e||s);
   $('axPanel').classList.toggle('hidden',e||!s);
-  $('modeRow').classList.toggle('hidden',e||!s);
+  $('modeRow').classList.add('hidden');
   const ortho=s&&!e&&taskMode==='o';
   $('stage').classList.toggle('ortho',ortho);
   $('modeO').setAttribute('aria-pressed',taskMode==='o'?'true':'false');$('mode3').setAttribute('aria-pressed',taskMode==='3'?'true':'false');
